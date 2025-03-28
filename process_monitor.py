@@ -1,10 +1,13 @@
 import psutil
+
+
 import time
 import platform
 from typing import Dict, List, Optional
 from datetime import datetime
 import subprocess
 from database import Database
+from idle_detector import IdleDetector
 
 class ProcessMonitor:
     def __init__(self):
@@ -12,6 +15,7 @@ class ProcessMonitor:
         self._active_window = None
         self._process_history = {}
         self.db = Database()
+        self.idle_detector = IdleDetector()
 
     def get_running_processes(self) -> List[Dict]:
         """Get list of all running processes with their details."""
@@ -32,13 +36,16 @@ class ProcessMonitor:
 
     def get_active_window(self) -> Optional[str]:
         """Get the currently active window title."""
+        previous_window = self._active_window
+
         if self.system == 'Linux':
             try:
                 # Try using xdotool first (more reliable)
                 result = subprocess.run(['xdotool', 'getactivewindow', 'getwindowname'],
                                      capture_output=True, text=True)
                 if result.returncode == 0:
-                    return result.stdout.strip()
+                    self._active_window = result.stdout.strip()
+                    return self._active_window
             except FileNotFoundError:
                 pass
 
@@ -46,14 +53,16 @@ class ProcessMonitor:
                 # Fallback to wmctrl if xdotool is not available
                 import wmctrl
                 window = wmctrl.Window.get_active()
-                return window.wm_name if window else None
+                self._active_window = window.wm_name if window else None
+                return self._active_window
             except (ImportError, Exception):
                 return None
         elif self.system == 'Windows':
             try:
                 import win32gui
                 window = win32gui.GetForegroundWindow()
-                return win32gui.GetWindowText(window)
+                self._active_window = win32gui.GetWindowText(window)
+                return self._active_window
             except ImportError:
                 return None
         return None

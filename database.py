@@ -41,7 +41,20 @@ class Database:
                     disk_total BIGINT NOT NULL,
                     disk_used BIGINT NOT NULL,
                     disk_percent REAL NOT NULL,
+                    idle_time INTEGER,
+                    is_idle BOOLEAN,
                     UNIQUE(timestamp)
+                )
+            ''')
+
+            # Create idle_periods table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS idle_periods (
+                    id SERIAL PRIMARY KEY,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time TIMESTAMP NOT NULL,
+                    duration INTEGER NOT NULL,
+                    UNIQUE(start_time)
                 )
             ''')
 
@@ -57,8 +70,9 @@ class Database:
             cursor.execute('''
                 INSERT INTO system_resources
                 (timestamp, cpu_percent, memory_total, memory_available,
-                memory_percent, disk_total, disk_used, disk_percent)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                memory_percent, disk_total, disk_used, disk_percent,
+                idle_time, is_idle)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO UPDATE SET
                     cpu_percent = EXCLUDED.cpu_percent,
                     memory_total = EXCLUDED.memory_total,
@@ -66,7 +80,9 @@ class Database:
                     memory_percent = EXCLUDED.memory_percent,
                     disk_total = EXCLUDED.disk_total,
                     disk_used = EXCLUDED.disk_used,
-                    disk_percent = EXCLUDED.disk_percent
+                    disk_percent = EXCLUDED.disk_percent,
+                    idle_time = EXCLUDED.idle_time,
+                    is_idle = EXCLUDED.is_idle
             ''', (
                 timestamp,
                 system_resources['cpu_percent'],
@@ -75,7 +91,9 @@ class Database:
                 system_resources['memory']['percent'],
                 system_resources['disk']['total'],
                 system_resources['disk']['used'],
-                system_resources['disk']['percent']
+                system_resources['disk']['percent'],
+                system_resources.get('idle_time', 0),
+                system_resources.get('is_idle', False)
             ))
 
             # Save processes

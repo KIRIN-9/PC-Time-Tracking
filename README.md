@@ -20,6 +20,7 @@ A comprehensive process monitoring and time tracking system that helps you under
   - xdotool (for window detection)
   - wmctrl (optional, fallback for window detection)
   - PostgreSQL (for data storage)
+  - xprintidle (for idle detection)
 
 ## Installation
 
