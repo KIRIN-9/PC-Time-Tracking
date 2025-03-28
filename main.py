@@ -1,66 +1,75 @@
-import psutil
+import argparse
+import threading
+from process_monitor import ProcessMonitor
+import time
 import json
 from datetime import datetime
 from tabulate import tabulate
-import time
-import os
-
-def get_process_info():
-    processes = []
-    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_info', 'create_time']):
-        try:
-            process_info = proc.info
-            pid = process_info['pid']
-            name = process_info['name']
-            proc.cpu_percent()
-            memory_mb = process_info['memory_info'].rss / (1024 * 1024)
-
-            # Calculate running time in seconds
-            create_time = process_info['create_time']
-            running_time = time.time() - create_time
-
-            process_dict = {
-                'pid': pid,
-                'name': name,
-                'cpu_percent': proc.cpu_percent(),
-                'memory_mb': round(memory_mb, 2),
-                'running_time': running_time
-            }
-            processes.append(process_dict)
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            pass
-    return processes
 
 def format_time(seconds):
+    """Format time in seconds to a human-readable string."""
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
 
-def save_process_data(processes):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # filename = f"process_data_{timestamp}.json"
-    filename = f"process_data.json"
-    with open(filename, 'w') as file:
-        json.dump(processes, file, indent=4)
-    print(f"Process data saved to {filename}")
-    return filename
+def print_process_stats(monitor: ProcessMonitor):
+    """Print current process statistics in a formatted table."""
+    processes = monitor.get_running_processes()
+    resources = monitor.get_system_resources()
+    active_window = monitor.get_active_window()
 
-def display_process_table(processes):
-    sorted_processes = sorted(processes, key=lambda x: x['memory_mb'], reverse=True)
-    table_data = [
-        [p['pid'], p['name'], f"{p['cpu_percent']:.1f}%", f"{p['memory_mb']:.2f}", format_time(p['running_time'])]
-        for p in sorted_processes
-    ]
-    headers = ["PID", "Process Name", "CPU %", "Memory (MB)", "Running Time"]
+    print("\n" + "="*50)
+    print(f"Active Window: {active_window}")
+    print(f"CPU Usage: {resources['cpu_percent']}%")
+    print(f"Memory Usage: {resources['memory']['percent']}%")
+    print(f"Disk Usage: {resources['disk']['percent']}%")
+    print("\nTop Processes by CPU Usage:")
+    print("-"*50)
+
+    # Sort processes by CPU usage and prepare table data
+    sorted_processes = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)
+    table_data = []
+    for proc in sorted_processes[:10]:  # Show top 10
+        running_time = time.time() - datetime.fromisoformat(proc['create_time']).timestamp()
+        table_data.append([
+            proc['pid'],
+            proc['name'],
+            f"{proc['cpu_percent']:.1f}%",
+            f"{proc['memory_percent']:.1f}%",
+            format_time(running_time)
+        ])
+
+    headers = ["PID", "Process Name", "CPU %", "Memory %", "Running Time"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 def main():
-    print("Fetching running processes...")
-    processes = get_process_info()
-    print(f"Found {len(processes)} running processes")
-    save_process_data(processes)
-    print("\nCurrent Running Processes:")
-    display_process_table(processes)
+    parser = argparse.ArgumentParser(description='Process Monitoring Dashboard')
+    parser.add_argument('--interval', type=float, default=1.0,
+                      help='Monitoring interval in seconds')
+    parser.add_argument('--output', type=str, help='Output file for process history')
+    args = parser.parse_args()
+
+    monitor = ProcessMonitor()
+
+    # Start monitoring in a separate thread
+    monitor_thread = threading.Thread(
+        target=monitor.monitor_processes,
+        args=(args.interval,),
+        daemon=True
+    )
+    monitor_thread.start()
+
+    try:
+        while True:
+            print_process_stats(monitor)
+            time.sleep(args.interval)
+    except KeyboardInterrupt:
+        print("\nStopping process monitoring...")
+        if args.output:
+            # Save process history to file
+            with open(args.output, 'w') as f:
+                json.dump(monitor.get_process_history(), f, indent=2)
+            print(f"Process history saved to {args.output}")
 
 if __name__ == "__main__":
     main()
