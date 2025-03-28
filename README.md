@@ -105,47 +105,9 @@ python main.py --interval 2.0 --output process_history.json
 - JSON-based process history storage
 - Real-time CLI display with tabulated output
 
-## Development Roadmap
+## Development
 
-### Phase 1: Core Process Monitoring & Data Collection ✓
-
-- [x] Process Tracking
-- [x] Real-Time Monitoring
-- [x] Foreground Process Detection
-- [x] System Resource Monitoring
-- [x] Process Start/Stop Logging
-
-### Phase 2: Data Storage & Processing (In Progress)
-
-- [ ] Database Integration
-- [ ] Data Structuring & Categorization
-- [ ] Historical Data & Trends
-- [ ] Idle Time Detection
-- [ ] Energy Consumption Tracking
-
-### Phase 3: User Interaction & Control (Planned)
-
-- [ ] CLI Interface
-- [ ] Custom Alerts & Notifications
-- [ ] Process Prioritization & Filtering
-- [ ] Custom Scheduling & Automation
-- [ ] Break & Focus Mode
-
-### Phase 4: Web Dashboard & API (Planned)
-
-- [ ] REST API for Remote Monitoring
-- [ ] Web Dashboard
-- [ ] Multi-User Authentication
-- [ ] Data Export & Reports
-- [ ] Remote Control for Processes
-
-### Phase 5: Advanced Features & Enhancements (Planned)
-
-- [ ] Application Window Focus Tracking
-- [ ] Process Dependency Mapping
-- [ ] Integration with External Tools
-- [ ] AI-Based Insights
-- [ ] Security & Privacy Controls
+See [ROADMAP.md](ROADMAP.md) for detailed development plans and progress.
 
 ## Contributing
 
