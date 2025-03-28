@@ -4,12 +4,14 @@ import platform
 from typing import Dict, List, Optional
 from datetime import datetime
 import subprocess
+from database import Database
 
 class ProcessMonitor:
-    def __init__(self):
+    def __init__(self, db_path: str = "process_data.db"):
         self.system = platform.system()
         self._active_window = None
         self._process_history = {}
+        self.db = Database(db_path)
 
     def get_running_processes(self) -> List[Dict]:
         """Get list of all running processes with their details."""
@@ -82,6 +84,11 @@ class ProcessMonitor:
 
                 # Log the current state
                 timestamp = datetime.now().isoformat()
+
+                # Save to database
+                self.db.save_process_data(timestamp, processes, active_window, system_resources)
+
+                # Keep in memory for quick access
                 self._process_history[timestamp] = {
                     'processes': processes,
                     'active_window': active_window,
@@ -95,6 +102,12 @@ class ProcessMonitor:
                 print(f"Error in process monitoring: {e}")
                 time.sleep(interval)
 
-    def get_process_history(self) -> Dict:
-        """Get the stored process history."""
-        return self._process_history
+    def get_process_history(self, start_time: Optional[str] = None,
+                          end_time: Optional[str] = None) -> Dict:
+        """Get process history from database."""
+        return self.db.get_process_history(start_time, end_time)
+
+    def get_process_summary(self, start_time: Optional[str] = None,
+                          end_time: Optional[str] = None) -> Dict:
+        """Get process summary statistics from database."""
+        return self.db.get_process_summary(start_time, end_time)

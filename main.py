@@ -3,7 +3,7 @@ import threading
 from process_monitor import ProcessMonitor
 import time
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from tabulate import tabulate
 
 def format_time(seconds):
@@ -42,14 +42,44 @@ def print_process_stats(monitor: ProcessMonitor):
     headers = ["PID", "Process Name", "CPU %", "Memory %", "Running Time"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
+def print_process_summary(monitor: ProcessMonitor, hours: int = 24):
+    """Print process summary statistics for the specified time range."""
+    end_time = datetime.now().isoformat()
+    start_time = (datetime.now() - timedelta(hours=hours)).isoformat()
+
+    summary = monitor.get_process_summary(start_time, end_time)
+
+    print(f"\nProcess Summary (Last {hours} hours):")
+    print("="*50)
+
+    table_data = []
+    for proc in summary['processes'][:10]:  # Show top 10
+        table_data.append([
+            proc['name'],
+            proc['count'],
+            f"{proc['avg_cpu']:.1f}%",
+            f"{proc['avg_memory']:.1f}%",
+            datetime.fromisoformat(proc['first_seen']).strftime('%H:%M:%S'),
+            datetime.fromisoformat(proc['last_seen']).strftime('%H:%M:%S')
+        ])
+
+    headers = ["Process Name", "Count", "Avg CPU %", "Avg Memory %", "First Seen", "Last Seen"]
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))
+
 def main():
     parser = argparse.ArgumentParser(description='Process Monitoring Dashboard')
     parser.add_argument('--interval', type=float, default=1.0,
                       help='Monitoring interval in seconds')
     parser.add_argument('--output', type=str, help='Output file for process history')
+    parser.add_argument('--db', type=str, default="process_data.db",
+                      help='Database file path')
+    parser.add_argument('--summary', action='store_true',
+                      help='Show process summary statistics')
+    parser.add_argument('--hours', type=int, default=24,
+                      help='Hours of history for summary (default: 24)')
     args = parser.parse_args()
 
-    monitor = ProcessMonitor()
+    monitor = ProcessMonitor(args.db)
 
     # Start monitoring in a separate thread
     monitor_thread = threading.Thread(
@@ -62,6 +92,8 @@ def main():
     try:
         while True:
             print_process_stats(monitor)
+            if args.summary:
+                print_process_summary(monitor, args.hours)
             time.sleep(args.interval)
     except KeyboardInterrupt:
         print("\nStopping process monitoring...")
