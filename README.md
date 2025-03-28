@@ -19,8 +19,11 @@ A comprehensive process monitoring and time tracking system that helps you under
 - System packages (Linux):
   - xdotool (for window detection)
   - wmctrl (optional, fallback for window detection)
+  - PostgreSQL (for data storage)
 
 ## Installation
+
+### Automated Setup (Recommended)
 
 1. Clone the repository:
 
@@ -29,22 +32,24 @@ git clone https://github.com/yourusername/PC-Time-Tracking.git
 cd PC-Time-Tracking
 ```
 
-2. Create and activate a virtual environment:
+2. Run the setup script with sudo privileges:
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Linux/Mac
-# or
-.\venv\Scripts\activate  # On Windows
+sudo python setup.py
 ```
 
-3. Install dependencies:
+This will:
 
-```bash
-pip install -r requirements.txt
-```
+- Install system dependencies (PostgreSQL, xdotool, wmctrl)
+- Set up PostgreSQL database and user
+- Create configuration file
+- Install Python dependencies
 
-4. Install system dependencies (Linux):
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. Install system dependencies:
 
 ```bash
 # For Arch Linux

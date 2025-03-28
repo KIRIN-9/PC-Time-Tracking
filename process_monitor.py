@@ -7,11 +7,11 @@ import subprocess
 from database import Database
 
 class ProcessMonitor:
-    def __init__(self, db_path: str = "process_data.db"):
+    def __init__(self):
         self.system = platform.system()
         self._active_window = None
         self._process_history = {}
-        self.db = Database(db_path)
+        self.db = Database()
 
     def get_running_processes(self) -> List[Dict]:
         """Get list of all running processes with their details."""

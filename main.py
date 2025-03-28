@@ -71,15 +71,13 @@ def main():
     parser.add_argument('--interval', type=float, default=1.0,
                       help='Monitoring interval in seconds')
     parser.add_argument('--output', type=str, help='Output file for process history')
-    parser.add_argument('--db', type=str, default="process_data.db",
-                      help='Database file path')
     parser.add_argument('--summary', action='store_true',
                       help='Show process summary statistics')
     parser.add_argument('--hours', type=int, default=24,
                       help='Hours of history for summary (default: 24)')
     args = parser.parse_args()
 
-    monitor = ProcessMonitor(args.db)
+    monitor = ProcessMonitor()
 
     # Start monitoring in a separate thread
     monitor_thread = threading.Thread(
