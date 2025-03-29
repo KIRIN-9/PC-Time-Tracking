@@ -40,14 +40,18 @@
   - Input device monitoring
   - Idle state detection
   - Activity logging
+- [ ] ~~Energy Consumption Tracking~~ (Postponed)
+  - Power usage monitoring
+  - Battery status tracking
+  - Energy efficiency metrics
 
 ## Phase 3: User Interaction & Control (In Progress)
 
-- [ ] CLI Interface
+- [x] CLI Interface
   - Command-line controls
   - Interactive mode
   - Configuration management
-- [ ] Custom Alerts & Notifications
+- [x] Custom Alerts & Notifications
   - Resource usage alerts
   - Custom notification rules
   - Alert history

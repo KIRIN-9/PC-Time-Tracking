@@ -8,3 +8,5 @@ python-dotenv>=1.0.0
 pandas>=2.0.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
+win10toast>=0.9; sys_platform == 'win32'
+windows-curses>=2.3.1; sys_platform == 'win32'
