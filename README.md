@@ -1,95 +1,66 @@
 # PC Time Tracking
 
-A minimalist CLI process monitor for Arch Linux with Hyprland that tracks real-time system processes, work sessions, and break periods.
+A powerful process monitoring and productivity tracking tool for Arch Linux with Hyprland integration, featuring detailed process analytics and system resource monitoring.
 
-## Features
+## Process Monitoring Dashboard
 
-- Real-time process monitoring with CPU and memory usage
-- Work session tracking with focus/break detection
-- PostgreSQL database integration for data persistence
-- Simple and efficient terminal user interface
-- Minimal dependencies
+### Process Overview
+![Process Overview](screenshot/psutil_dashboard_process_page.png)
 
-## Requirements
+The main dashboard provides real-time monitoring of system processes with:
+- Process list with CPU and memory usage
+- System resource utilization
+- Active processes sorting and filtering
 
-- Python 3.8+
-- PostgreSQL
-- Arch Linux with Hyprland (optional)
+### Process Details
+![Process Details](screenshot/psutil_dashboard_process_detail_page.png)
 
-## Installation
+Detailed process view includes:
+- In-depth process statistics
+- Resource usage history
+- Process-specific metrics
 
-1. Clone the repository:
+## Core Features
 
-```bash
-git clone https://github.com/yourusername/PC-Time-Tracking.git
-cd PC-Time-Tracking
-```
+### System Monitoring
+- Real-time process tracking with psutil
+- CPU and memory usage analytics
+- Process lifecycle management
+- System resource monitoring
 
-2. Create and activate a virtual environment:
+### Hyprland Integration
+- Window focus tracking
+- Workspace activity monitoring
+- Application usage statistics
 
-```bash
-python -m venv venv
-source venv/bin/activate
-```
+### Data Management
+- PostgreSQL database (pc_tracking)
+- Process history logging
+- Activity timeline tracking
+- Work session analytics
 
-3. Install dependencies:
+## Technical Requirements
 
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up the database:
-
-```bash
-createdb pc_time_tracking
-```
-
-5. Configure environment variables:
-
-```bash
-cp .env.example .env
-# Edit .env with your database credentials and preferences
-```
+- Arch Linux
+- Hyprland window manager
+- PostgreSQL database
+- Python 3.x
+- psutil, psycopg2, blessed libraries
 
 ## Usage
 
-1. Start the monitor:
+### Controls
+- `q`: Exit application
+- `r`: Refresh process list
+- `s`: Toggle summary view
 
-```bash
-python main.py
-```
-
-2. The interface will show:
-
-   - Active processes with CPU and memory usage
-   - Current work session statistics
-   - Focus/break ratio
-
-3. Controls:
-   - Press 'q' to quit
-   - The monitor automatically detects idle periods and work sessions
+### Configuration
+- Process monitoring interval: 1.0s
+- Idle detection threshold: 300s
+- Database user: aura
 
 ## Database Schema
 
-The application uses three main tables:
-
-- `processes`: Stores process information and resource usage
-- `work_sessions`: Tracks work sessions and their metrics
-- `activity_timeline`: Records process activity over time
-
-## Configuration
-
-Edit the `.env` file to customize:
-
-- Database connection settings
-- Update intervals
-- Idle detection thresholds
-- UI preferences
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Processes: System process metrics and states
+- WorkSessions: Productivity tracking periods
+- ActivityTimeline: Detailed system activity logs

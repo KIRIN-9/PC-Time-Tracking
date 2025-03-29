@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block head %} 
+    <title> PSUTIL-DASHBOARD </title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.13.1/datatables.min.css"/>
+    <style>
+        table {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block pagetitle %} 
+<div class="text-center w-100">
+    <h3 class="text-white h3">Processes</h3>
+    <p class="text-small text-muted">
+
+        {% if context.platform_info['os_name'] != 'unknown' %}
+            <i class="fa-brands fa-{{context.platform_info['os_name']}}"></i>
+        {% else %}
+            <i class="fa-brands fa-question"></i>
+        {% endif %}
+
+        Hostname: {{ context.platform_info['node_name'] }},
+        OS: {% if context.platform_info['os_name'] == 'apple' %} macOS {% else %} {{ context.platform_info['os_name']|title }} {% endif %},
+        System: {{ context.platform_info['system_name'] }} v{{ context.platform_info['release_version'] }},
+        Architecture: {{ context.platform_info['architecture'] }} {{ context.platform_info['processor_type'] }},
+        Up Time: {{ context.platform_info['boot_time'] }}
+    </p>
+</div>
+
+{% endblock %}
+
+{% block body %}
+
+    <!-- Main Contents -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="row"' style="padding-top: 10px;">
+            <div class="table-responsive text-muted" style="padding-top: 25px;">
+                <table id="all-processes-table" class="table table-dark table-hover">
+                    <thead>
+                        <tr class="text-muted">
+                            <th class="text-white">PID</th>
+                            <th>Name</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Memory (%)</th>
+                            <th>CPU (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for processes in context.process_list.values() %}
+                        <tr class="text-muted">
+                            <td class="text-white"><a href="{{ url_for('processes') }}/{{processes.pid}}">{{processes.pid}}</a></td>
+                            <td>{{processes.name}}</td>
+                            <td>{{processes.username}}</td>
+                            <td>{{processes.status}}</td>
+                            <td>{{processes.create_time.strftime('%d-%m-%y %H:%M:%S')}}</td>
+                            {% if processes.memory_percent != None %}
+                            <td>{{processes.memory_percent|round(1)}}</td>
+                            {% else %}
+                            <td>{{processes.memory_percent}}</td>
+                            {% endif %}
+                            {% if context.process_data.cpu_percent != None %}
+                            <td>{{context.process_data.cpu_percent|round(1)}}</td>
+                            {% else %}
+                            <td>{{context.process_data.cpu_percent}}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block script %} 
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.13.1/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#all-processes-table').DataTable({
+            order: [[5, 'desc']],
+        });
+    });
+</script>
+{% endblock %}
