@@ -5,16 +5,29 @@ from datetime import datetime, timedelta
 from blessed import Terminal
 from database import Database
 from config import Config
+from hyprland_monitor import HyprlandMonitor
+from analytics import Analytics
 
 class ProcessMonitor:
     def __init__(self):
         self.term = Terminal()
         self.db = Database()
+        self.analytics = Analytics(self.db)
         self.running = True
         self.current_session = None
         self.active_processes = {}
         self.last_cpu_check = datetime.now()
         self.idle_time = timedelta(0)
+        self.current_window = None
+        self.current_workspace = 'default'
+        
+        try:
+            self.hyprland = HyprlandMonitor()
+            self.hyprland.on_window_change(self.handle_window_change)
+            self.hyprland.on_workspace_change(self.handle_workspace_change)
+        except EnvironmentError:
+            print("Warning: Hyprland not detected, window tracking disabled")
+            self.hyprland = None
 
     def start(self):
         """Start the process monitor."""
@@ -111,12 +124,44 @@ class ProcessMonitor:
                 'is_break': False
             }
 
+    def handle_window_change(self, window_data):
+        """Handle window focus change from Hyprland."""
+        if self.current_window:
+            # Update end time for previous window
+            with self.db.conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE window_activity
+                    SET end_time = %s, duration = %s - start_time
+                    WHERE window_title = %s AND end_time IS NULL
+                """, (datetime.now(), datetime.now(), self.current_window))
+
+        self.current_window = window_data
+        if window_data:
+            # Insert new window activity
+            with self.db.conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO window_activity 
+                    (process_id, window_title, workspace, start_time)
+                    VALUES (
+                        (SELECT id FROM processes WHERE name = %s ORDER BY start_time DESC LIMIT 1),
+                        %s, %s, %s
+                    )
+                """, (window_data.split(' ')[0], window_data, self.current_workspace, datetime.now()))
+            self.db.conn.commit()
+
+    def handle_workspace_change(self, workspace_data):
+        """Handle workspace change from Hyprland."""
+        self.current_workspace = workspace_data
+
     def draw_ui(self):
         """Draw the terminal user interface."""
         print(self.term.clear())
 
-        # Draw header
+        # Draw header with current window/workspace
         print(self.term.blue("PC Time Tracking Monitor") + self.term.normal)
+        if self.hyprland and self.current_window:
+            print(f"Current Window: {self.current_window}")
+            print(f"Workspace: {self.current_workspace}")
         print(self.term.blue("=" * self.term.width) + self.term.normal)
 
         # Draw process list
@@ -127,11 +172,23 @@ class ProcessMonitor:
             status = self.term.green("●") if proc['cpu_usage'] > Config.CPU_THRESHOLD else self.term.yellow("●")
             print(f"{status} {proc['name']:<30} CPU: {proc['cpu_usage']:>5.1f}% MEM: {proc['memory_usage']/1024/1024:>5.1f}MB")
 
-        # Draw timeline
-        print(self.term.blue("\nActivity Timeline:") + self.term.normal)
+        # Draw analytics
+        print(self.term.blue("\nDaily Summary:") + self.term.normal)
         print("-" * Config.TIMELINE_WIDTH)
 
+        daily_summary = self.analytics.get_daily_summary()
+        if daily_summary:
+            print(f"Total Work Time: {daily_summary['total_work_time']}")
+            print(f"Total Break Time: {daily_summary['total_break_time']}")
+            print(f"Focus Ratio: {daily_summary['focus_ratio']:.1%}")
+            print(f"Most Used App: {daily_summary['most_used_app']}")
+            print(f"Most Active Workspace: {daily_summary['most_active_workspace']}")
+            if daily_summary['peak_hour'] is not None:
+                print(f"Peak Productivity Hour: {daily_summary['peak_hour']:02d}:00")
+
         if self.current_session:
+            print(self.term.blue("\nCurrent Session:") + self.term.normal)
+            print("-" * Config.TIMELINE_WIDTH)
             focus_ratio = (self.current_session['focus_time'].total_seconds() /
                          (self.current_session['focus_time'] + self.current_session['break_time']).total_seconds()
                          if (self.current_session['focus_time'] + self.current_session['break_time']).total_seconds() > 0
@@ -142,9 +199,9 @@ class ProcessMonitor:
             print(f"Break Time: {self.current_session['break_time']}")
             print(f"Focus Ratio: {focus_ratio:.1%}")
 
-        # Draw footer
+        # Draw footer with controls
         print(self.term.blue("\n" + "=" * self.term.width) + self.term.normal)
-        print("Press 'q' to quit")
+        print("Controls: 'q' Quit | 'r' Refresh Analytics | 's' Show Weekly Summary")
 
     def cleanup(self):
         """Clean up resources before exit."""
@@ -155,6 +212,9 @@ class ProcessMonitor:
                 self.current_session['focus_time'],
                 self.current_session['break_time']
             )
+        if self.hyprland:
+            self.hyprland.stop()
+        self.analytics.calculate_daily_metrics()
         self.db.close()
 
 if __name__ == "__main__":

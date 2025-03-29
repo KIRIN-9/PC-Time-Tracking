@@ -67,6 +67,35 @@ class Database:
                 )
             """)
 
+            # Create window_activity table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS window_activity (
+                    id SERIAL PRIMARY KEY,
+                    process_id INTEGER REFERENCES processes(id),
+                    window_title TEXT NOT NULL,
+                    workspace TEXT NOT NULL,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time TIMESTAMP,
+                    duration INTERVAL,
+                    is_focused BOOLEAN DEFAULT true
+                )
+            """)
+
+            # Create analytics table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS analytics (
+                    id SERIAL PRIMARY KEY,
+                    date DATE NOT NULL,
+                    total_work_time INTERVAL,
+                    total_break_time INTERVAL,
+                    focus_ratio FLOAT,
+                    most_used_app TEXT,
+                    most_active_workspace TEXT,
+                    peak_productivity_hour INTEGER,
+                    UNIQUE (date)
+                )
+            """)
+
             self.conn.commit()
 
     def insert_process(self, process_data):
