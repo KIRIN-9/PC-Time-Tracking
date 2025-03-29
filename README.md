@@ -1,299 +1,200 @@
 # PC Time Tracking
 
-A comprehensive process monitoring and time tracking system that helps you understand how you use your computer.
+A cross-platform tool for monitoring and analyzing PC usage and application time.
 
 ## Features
 
-- Real-time process monitoring
-- System resource tracking (CPU, Memory, Disk)
-- Active window detection (Windows and Linux)
-- Process categorization and time analytics
-- Process filtering and prioritization
-- Interactive CLI with colorful interface
-- Custom alerts and notifications
-- Process history logging
+- Process monitoring with detailed statistics
+- System resource tracking (CPU, memory, disk usage)
 - Idle time detection
-- Cross-platform support (Windows and Linux)
+- Process filtering and prioritization
+- Process categorization
+- REST API for data access
+- Web dashboard for visualizing productivity
+- Work and break tracking
+- Exportable data in CSV or JSON format
 
-## Requirements
+## Architecture
 
-- Python 3.8 or higher
-- Linux or Windows operating system
-- Required Python packages (see requirements.txt)
-- System packages (Linux):
-  - xdotool (for window detection)
-  - wmctrl (optional, fallback for window detection)
-  - PostgreSQL (for data storage)
-  - xprintidle (for idle detection)
-  - libnotify-bin (for desktop notifications)
+The application is split into backend and frontend components:
+
+- **Backend**: Python-based process monitoring engine with a REST API
+- **Frontend**: JavaScript-based web dashboard for data visualization
 
 ## Installation
 
-### Automated Setup (Recommended)
+1. Clone this repository:
 
-1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/PC-Time-Tracking.git
+   cd PC-Time-Tracking
+   ```
 
-```bash
-git clone https://github.com/yourusername/PC-Time-Tracking.git
-cd PC-Time-Tracking
-```
+2. Create a virtual environment and install dependencies:
 
-2. Run the setup script with sudo privileges:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-```bash
-sudo python setup.py
-```
+3. Set up environment variables:
 
-This will:
+   ```
+   cp .env.example .env
+   ```
 
-- Install system dependencies (PostgreSQL, xdotool, wmctrl)
-- Set up PostgreSQL database and user
-- Create configuration file
-- Install Python dependencies
-
-### Manual Setup
-
-If you prefer to set up manually:
-
-1. Install system dependencies:
-
-```bash
-# For Arch Linux
-sudo pacman -S xdotool wmctrl libnotify postgresql
-
-# For Ubuntu/Debian
-sudo apt-get install xdotool wmctrl libnotify-bin postgresql
-```
-
-2. Install Python dependencies:
-
-```bash
-pip install -r requirements.txt
-```
+   Edit the `.env` file to set your database connection details.
 
 ## Usage
 
-The application provides a unified command interface:
+### Starting the Application
 
-```bash
-./pc_time_tracker.py [command] [options]
+To start the application with the dashboard:
+
+```
+./pc_time_tracker.py start
 ```
 
-Available commands:
+This will start both the API server and web server, and open the dashboard in your default web browser.
 
-- `monitor` - Run the basic process monitor
-- `cli` - Launch the interactive CLI interface
-- `alerts` - Manage alerts and notifications
-- `report` - Generate reports and visualizations
+Additional options:
 
-### Basic Monitoring
+- `--api-port PORT` - Set custom API port (default: 5000)
+- `--web-port PORT` - Set custom web port (default: 8080)
+- `--no-browser` - Do not open browser automatically
 
-```bash
-./pc_time_tracker.py monitor [--interval SECONDS] [--output FILE] [--summary] [--categories]
+### Checking Application Status
+
 ```
-
-### Interactive CLI
-
-```bash
-./pc_time_tracker.py cli --interactive
-```
-
-The interactive CLI provides:
-
-- Real-time process monitoring with colorful interface
-- Multiple views (processes, categories, resources)
-- Process selection and details
-- Keyboard shortcuts for easy navigation
-
-### Standard CLI
-
-```bash
-./pc_time_tracker.py cli [--view {processes,categories,resources}] [--refresh SECONDS]
+./pc_time_tracker.py status
 ```
 
 ### Managing Process Filters
 
 List filter settings:
 
-```bash
-./pc_time_tracker.py filter list [--type {excluded,patterns,priorities,thresholds}]
+```
+./pc_time_tracker.py filter list [--type {excluded,patterns,priorities,thresholds,all}]
 ```
 
 Exclude/include processes:
 
-```bash
+```
 ./pc_time_tracker.py filter exclude "chrome"
 ./pc_time_tracker.py filter include "chrome"
 ```
 
 Manage regex patterns:
 
-```bash
+```
 ./pc_time_tracker.py filter pattern "^python.*$"
 ./pc_time_tracker.py filter remove-pattern "^python.*$"
 ```
 
-Set process priorities (1-5, 5 is highest):
+Set process priorities:
 
-```bash
+```
 ./pc_time_tracker.py filter priority "code" 5
 ./pc_time_tracker.py filter remove-priority "code"
 ```
 
 Set resource thresholds:
 
-```bash
-./pc_time_tracker.py filter threshold cpu 0.5
-./pc_time_tracker.py filter threshold memory 1.0
+```
+./pc_time_tracker.py filter cpu-threshold 0.5
+./pc_time_tracker.py filter memory-threshold 0.5
 ```
 
 Include/exclude system processes:
 
-```bash
-./pc_time_tracker.py filter system yes
-./pc_time_tracker.py filter system no
+```
+./pc_time_tracker.py filter include-system
+./pc_time_tracker.py filter exclude-system
 ```
 
-Reset to defaults:
+Reset filters to defaults:
 
-```bash
+```
 ./pc_time_tracker.py filter reset
 ```
 
-### Managing Alerts
+### Managing Process Categories
 
-List configured alerts:
+List categories:
 
-```bash
-./pc_time_tracker.py alerts list
+```
+./pc_time_tracker.py category list
 ```
 
-Add a new alert:
+Add/remove processes from categories:
 
-```bash
-./pc_time_tracker.py alerts add --type resource --name "High CPU" --description "CPU usage alert" --resource cpu --threshold 90
+```
+./pc_time_tracker.py category add "chrome" "Browser"
+./pc_time_tracker.py category remove "chrome" "Browser"
 ```
 
-Alert types:
+Add/remove regex patterns from categories:
 
-- `resource` - Monitor CPU, memory, or disk usage
-- `process` - Alert when specific processes are running
-- `category` - Alert when too much time is spent in a category
-- `idle` - Alert after system has been idle for a period
-
-Monitor alerts in real-time:
-
-```bash
-./pc_time_tracker.py alerts monitor
+```
+./pc_time_tracker.py category add-pattern "^chrome.*$" "Browser"
+./pc_time_tracker.py category remove-pattern "^chrome.*$" "Browser"
 ```
 
-View alert history:
+Create/delete categories:
 
-```bash
-./pc_time_tracker.py alerts history
+```
+./pc_time_tracker.py category create "Custom"
+./pc_time_tracker.py category delete "Custom"
 ```
 
-### Generate Reports
+Reset categories to defaults:
 
-```bash
-./pc_time_tracker.py report [--hours HOURS] [--categories-only] [--output DIRECTORY]
+```
+./pc_time_tracker.py category reset
 ```
 
-## Current Implementation Details
+## Web Dashboard
 
-### Process Monitoring
+The web dashboard provides a visual interface for monitoring and analyzing your computer usage data. It includes:
 
-- Real-time tracking of all running processes
-- Captures process details:
-  - Process ID (PID)
-  - Process Name
-  - CPU Usage
-  - Memory Usage
-  - Creation Time
-  - Running Duration
-  - Category
+- Timeline visualization of your work day
+- Work hours tracking and statistics
+- Break timer and break-to-work ratio
+- Recent activity tracking
+- Work blocks visualization
+- Project and category time breakdown
+- Focus, meetings, and breaks scores
 
-### Process Categorization
+To access the dashboard, navigate to `http://localhost:8080` in your web browser after starting the application.
 
-- Automatic categorization of processes into meaningful groups:
-  - Development
-  - Productivity
-  - Web Browsing
-  - Entertainment
-  - System
-  - Uncategorized
-- Customizable categories via configuration files
-- Time distribution analysis by category
-- Visual reports showing category usage over time
+## REST API
 
-### Process Filtering & Prioritization
+The application exposes a REST API on port 5000 by default. Available endpoints:
 
-- Filter out unwanted processes from monitoring
-  - Exclude specific processes by name
-  - Exclude processes matching regex patterns
-  - Filter based on CPU and memory usage thresholds
-  - Option to include/exclude system processes
-- Prioritize important processes
-  - Assign priority levels (1-5) to processes
-  - Sort and display processes by priority
-  - Focus on high-priority processes in reports
-- Resource limits (planned)
-  - Set CPU usage limits
-  - Set memory usage limits
-  - Enforce resource restrictions
+- `GET /api/processes?date=YYYY-MM-DD` - Get processes for a specific date
+- `GET /api/resources?date=YYYY-MM-DD` - Get system resources for a specific date
+- `GET /api/idle?date=YYYY-MM-DD` - Get idle time data for a specific date
+- `POST /api/tracking` - Toggle tracking on/off
+- `GET /api/status` - Get current tracking status
+- `POST /api/breaks` - Log a manual break
+- `GET/POST /api/filters` - Get or update filter settings
+- `GET /api/export?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&format=csv` - Export data
+- `GET/POST /api/categories` - Get or update process categories
+- `GET /api/statistics?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` - Get usage statistics
 
-### System Resource Tracking
+## Data Export
 
-- CPU Usage
-- Memory Usage (Total, Available, Percentage)
-- Disk Usage (Total, Used, Percentage)
+To export your tracking data, use the API endpoint or the following command:
 
-### Alert System
+```
+curl -o export.csv "http://localhost:5000/api/export?start_date=2023-01-01&end_date=2023-01-31&format=csv"
+```
 
-- Resource usage alerts (CPU, memory, disk)
-- Process-specific alerts
-- Category usage time limits
-- Idle time notifications
-- Desktop notifications
-- Configurable alert thresholds
-- Alert history tracking
+## License
 
-### CLI Interface
-
-- Interactive mode with curses interface
-- Multiple view modes
-- Customizable refresh rate
-- Sort processes by different criteria
-- Color-coded interface
-- Keyboard shortcuts
-
-### Idle Detection
-
-- Tracks computer idle time
-- Configurable idle threshold
-- Records idle periods for accurate time analysis
-
-### Active Window Detection
-
-- Windows: Uses win32gui
-- Linux: Uses xdotool (primary) and wmctrl (fallback)
-- Graceful fallback if window detection is not available
-
-### Data Collection
-
-- Continuous background monitoring
-- Configurable update interval
-- Database storage with PostgreSQL
-- Real-time CLI display with tabulated output
-
-## Development
-
-See [ROADMAP.md](ROADMAP.md) for detailed development plans and progress.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

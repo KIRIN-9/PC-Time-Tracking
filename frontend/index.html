@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PC Time Tracker - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Day.js for date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.4/dayjs.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>PC TIME TRACKER</h1>
+      <div class="date-nav">
+        <button id="prev-day">&lt;</button>
+        <h2 id="current-date">Today</h2>
+        <button id="next-day">&gt;</button>
+      </div>
+      <div class="view-options">
+        <button class="active" id="view-day">Day</button>
+        <button id="view-week">Week</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="dashboard-grid">
+        <!-- Timeline visualization -->
+        <section class="timeline-section">
+          <h3>TIMELINE</h3>
+          <div class="timeline-container">
+            <div class="timeline-chart">
+              <canvas id="timeline-canvas"></canvas>
+            </div>
+            <div class="timeline-hours">
+              <div>6:00</div>
+              <div>8:00</div>
+              <div>10:00</div>
+              <div>12:00</div>
+              <div>14:00</div>
+              <div>16:00</div>
+              <div>18:00</div>
+              <div>20:00</div>
+              <div>22:00</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Work hours summary -->
+        <section class="work-hours-section">
+          <h3>WORK HOURS</h3>
+          <div class="work-summary">
+            <div class="total-time">
+              <span>Total time worked</span>
+              <h2 id="total-time-value">0 hr 0 min</h2>
+            </div>
+            <div class="percent-worked">
+              <span>Percent of work day</span>
+              <h2 id="percent-value">0%</h2>
+              <span id="workday-hours">of 8 hr 0 min</span>
+            </div>
+          </div>
+          <div class="tracking-info">
+            <div>
+              <span>Tracking:</span>
+              <span id="tracking-status">On</span>
+            </div>
+            <div>
+              <span>Tracking Hours:</span>
+              <span id="tracking-hours">8:00 - 18:00</span>
+            </div>
+          </div>
+          <button id="toggle-tracking">Disable Tracking</button>
+        </section>
+
+        <!-- Break timer -->
+        <section class="break-timer-section">
+          <h3>BREAK TIMER</h3>
+          <div class="break-info">
+            <div>
+              <span>Time since last break</span>
+              <h2 id="time-since-break">0:00:00</h2>
+            </div>
+            <div>
+              <span>Break to work ratio</span>
+              <h2 id="break-ratio">1 / 0</h2>
+            </div>
+          </div>
+          <button id="start-break">Start Break</button>
+        </section>
+
+        <!-- Activity tracking -->
+        <section class="activity-section">
+          <h3>ACTIVITY</h3>
+          <div class="activity-list" id="activity-list">
+            <!-- Activity items will be inserted here dynamically -->
+          </div>
+        </section>
+
+        <!-- Work blocks -->
+        <section class="workblocks-section">
+          <h3>WORKBLOCKS</h3>
+          <div class="workblocks-list" id="workblocks-list">
+            <!-- Work block items will be inserted here dynamically -->
+          </div>
+        </section>
+
+        <!-- Projects tracking -->
+        <section class="projects-section">
+          <h3>PROJECTS</h3>
+          <div class="projects-list" id="projects-list">
+            <!-- Project items will be inserted here dynamically -->
+          </div>
+        </section>
+
+        <!-- Scores section -->
+        <section class="scores-section">
+          <h3>SCORES</h3>
+          <div class="scores-container">
+            <div class="score-item">
+              <div class="score-chart">
+                <canvas id="focus-chart"></canvas>
+                <div class="score-value" id="focus-score">0%</div>
+              </div>
+              <div class="score-details">
+                <h4>Focus</h4>
+                <span id="focus-time">0 hr 0 min</span>
+              </div>
+            </div>
+            <div class="score-item">
+              <div class="score-chart">
+                <canvas id="meetings-chart"></canvas>
+                <div class="score-value" id="meetings-score">0%</div>
+              </div>
+              <div class="score-details">
+                <h4>Meetings</h4>
+                <span id="meetings-time">0 min</span>
+              </div>
+            </div>
+            <div class="score-item">
+              <div class="score-chart">
+                <canvas id="breaks-chart"></canvas>
+                <div class="score-value" id="breaks-score">0%</div>
+              </div>
+              <div class="score-details">
+                <h4>Breaks</h4>
+                <span id="breaks-time">0 hr 0 min</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Time breakdown -->
+        <section class="breakdown-section">
+          <h3>TIME BREAKDOWN</h3>
+          <div class="breakdown-list" id="breakdown-list">
+            <!-- Breakdown items will be inserted here dynamically -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>
