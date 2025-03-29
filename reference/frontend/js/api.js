@@ -1,8 +1,76 @@
 // API.js - API utilities for the PC Time Tracker
 
+const API_BASE_URL = "http://localhost:5000/api";
+
+// Helper function for making API requests
+async function makeRequest(endpoint, options = {}) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// API client object
 const api = {
-  // Base URL for API endpoints
-  baseUrl: config.apiBaseUrl,
+  // Status and monitoring
+  getStatus: () => makeRequest("/status"),
+  startMonitoring: () => makeRequest("/monitor/start", { method: "POST" }),
+  stopMonitoring: () => makeRequest("/monitor/stop", { method: "POST" }),
+
+  // Real-time data
+  getCurrentResources: () => makeRequest("/resources/current"),
+  getActiveProcesses: () => makeRequest("/processes/active"),
+  getActiveWindow: () => makeRequest("/active-window"),
+
+  // Historical data
+  getProcessHistory: (startTime, endTime, category = "all") =>
+    makeRequest(
+      `/processes/history?start_time=${startTime}&end_time=${endTime}&category=${category}`
+    ),
+
+  getResourceHistory: (startTime, endTime) =>
+    makeRequest(
+      `/resources/history?start_time=${startTime}&end_time=${endTime}`
+    ),
+
+  getIdleHistory: (startTime, endTime) =>
+    makeRequest(`/idle/history?start_time=${startTime}&end_time=${endTime}`),
+
+  // Process details
+  getProcessDetails: (pid) => makeRequest(`/processes/${pid}`),
+
+  // Categories
+  getCategories: () => makeRequest("/categories"),
+  getProcessesByCategory: (category, startTime, endTime) =>
+    makeRequest(
+      `/categories/${category}/processes?start_time=${startTime}&end_time=${endTime}`
+    ),
+  updateCategories: (categories) =>
+    makeRequest("/categories/update", {
+      method: "POST",
+      body: JSON.stringify({ categories }),
+    }),
+
+  // Statistics
+  getStatsSummary: (startTime, endTime) =>
+    makeRequest(`/stats/summary?start_time=${startTime}&end_time=${endTime}`),
+
+  // Filter settings
+  updateFilter: (settings) =>
+    makeRequest("/filter/update", {
+      method: "POST",
+      body: JSON.stringify(settings),
+    }),
 
   /**
    * Fetch processes for a specific date
@@ -11,7 +79,7 @@ const api = {
    */
   async fetchProcesses(date) {
     try {
-      const url = `${this.baseUrl}/api/processes?date=${date}`;
+      const url = `${API_BASE_URL}/api/processes?date=${date}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -33,7 +101,7 @@ const api = {
    */
   async fetchResources(date) {
     try {
-      const url = `${this.baseUrl}/api/resources?date=${date}`;
+      const url = `${API_BASE_URL}/api/resources?date=${date}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -55,7 +123,7 @@ const api = {
    */
   async fetchIdleTime(date) {
     try {
-      const url = `${this.baseUrl}/api/idle?date=${date}`;
+      const url = `${API_BASE_URL}/api/idle?date=${date}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -77,7 +145,7 @@ const api = {
    */
   async toggleTracking(enabled) {
     try {
-      const url = `${this.baseUrl}/api/tracking`;
+      const url = `${API_BASE_URL}/api/tracking`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -105,7 +173,7 @@ const api = {
    */
   async logBreak(startTime, endTime) {
     try {
-      const url = `${this.baseUrl}/api/breaks`;
+      const url = `${API_BASE_URL}/api/breaks`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -137,7 +205,7 @@ const api = {
    */
   async exportData(startDate, endDate, format = "csv") {
     try {
-      const url = `${this.baseUrl}/api/export?start_date=${startDate}&end_date=${endDate}&format=${format}`;
+      const url = `${API_BASE_URL}/api/export?start_date=${startDate}&end_date=${endDate}&format=${format}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -158,7 +226,7 @@ const api = {
    */
   async getTrackingStatus() {
     try {
-      const url = `${this.baseUrl}/api/status`;
+      const url = `${API_BASE_URL}/api/status`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -179,7 +247,7 @@ const api = {
    */
   async updateFilters(filterSettings) {
     try {
-      const url = `${this.baseUrl}/api/filters`;
+      const url = `${API_BASE_URL}/api/filters`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -205,7 +273,7 @@ const api = {
    */
   async getFilters() {
     try {
-      const url = `${this.baseUrl}/api/filters`;
+      const url = `${API_BASE_URL}/api/filters`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -219,3 +287,6 @@ const api = {
     }
   },
 };
+
+// Export the API client
+window.api = api;

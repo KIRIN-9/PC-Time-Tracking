@@ -1,0 +1,107 @@
+{
+  "categories": {
+    "Browser": [
+      "chrome",
+      "firefox",
+      "brave",
+      "edge",
+      "safari",
+      "opera"
+    ],
+    "Development": [
+      "code",
+      "idea",
+      "pycharm",
+      "eclipse",
+      "android studio",
+      "vim",
+      "emacs",
+      "vscode",
+      "atom"
+    ],
+    "Communication": [
+      "slack",
+      "discord",
+      "teams",
+      "skype",
+      "zoom",
+      "telegram",
+      "signal"
+    ],
+    "Productivity": [
+      "office",
+      "word",
+      "excel",
+      "powerpoint",
+      "docs",
+      "sheets",
+      "slides",
+      "notes",
+      "onenote"
+    ],
+    "Media": [
+      "spotify",
+      "vlc",
+      "music",
+      "video",
+      "netflix",
+      "youtube",
+      "media player"
+    ],
+    "System": [
+      "explorer",
+      "finder",
+      "systemd",
+      "kernel",
+      "gnome",
+      "kde",
+      "xorg",
+      "wayland"
+    ],
+    "Gaming": [
+      "steam",
+      "game",
+      "epic games",
+      "origin",
+      "battle.net"
+    ]
+  },
+  "patterns": {
+    "Browser": [
+      "^chrome$",
+      "^firefox$",
+      "^brave$",
+      "^safari$",
+      "^edge$",
+      "^opera$"
+    ],
+    "Development": [
+      "^code",
+      "^idea",
+      "^pycharm",
+      "^eclipse",
+      "^android.?studio",
+      "^vim",
+      "^emacs"
+    ],
+    "Communication": [
+      "^slack$",
+      "^discord$",
+      "^teams$",
+      "^skype$",
+      "^zoom$",
+      "^telegram$",
+      "^signal$"
+    ],
+    "System": [
+      "^systemd",
+      "^kernel",
+      "^gnome",
+      "^kde",
+      "^xorg",
+      "^wayland",
+      "^explorer$",
+      "^finder$"
+    ]
+  }
+}

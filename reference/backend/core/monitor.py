@@ -67,27 +67,54 @@ class ProcessMonitor:
             try:
                 import subprocess
                 def get_active_window_linux():
+                    """Get the active window title in Wayland"""
                     try:
-                        # Try xdotool first
-                        result = subprocess.run(
-                            ["xdotool", "getactivewindow", "getwindowname"],
-                            capture_output=True, text=True, check=False
-                        )
-                        if result.returncode == 0:
-                            return result.stdout.strip()
+                        # Try swaymsg for Sway
+                        try:
+                            result = subprocess.run(
+                                ["swaymsg", "-t", "get_tree"],
+                                capture_output=True, text=True, check=False
+                            )
+                            if result.returncode == 0:
+                                import json
+                                tree = json.loads(result.stdout)
+                                # Find the focused window
+                                def find_focused(node):
+                                    if node.get('focused'):
+                                        return node.get('name')
+                                    for child in node.get('nodes', []):
+                                        result = find_focused(child)
+                                        if result:
+                                            return result
+                                    return None
+                                return find_focused(tree)
+                        except Exception:
+                            pass
 
-                        # Try xprop as fallback
-                        result = subprocess.run(
-                            ["xprop", "-id", "$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)", "WM_NAME"],
-                            shell=True, capture_output=True, text=True, check=False
-                        )
-                        if result.returncode == 0:
-                            output = result.stdout.strip()
-                            if output.startswith("WM_NAME"):
-                                return output.split("=", 1)[1].strip().strip('"')
+                        # Try wl-paste for Wayland
+                        try:
+                            result = subprocess.run(
+                                ["wl-paste", "-t", "text/plain"],
+                                capture_output=True, text=True, check=False
+                            )
+                            if result.returncode == 0:
+                                return result.stdout.strip()
+                        except Exception:
+                            pass
 
-                    except Exception:
-                        pass
+                        # Try wl-clipboard as fallback
+                        try:
+                            result = subprocess.run(
+                                ["wl-clipboard", "-t", "text/plain"],
+                                capture_output=True, text=True, check=False
+                            )
+                            if result.returncode == 0:
+                                return result.stdout.strip()
+                        except Exception:
+                            pass
+
+                    except Exception as e:
+                        print(f"Warning: Error getting active window: {e}")
 
                     return None
                 return get_active_window_linux

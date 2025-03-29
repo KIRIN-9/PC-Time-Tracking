@@ -11,6 +11,7 @@ import json
 import datetime
 import csv
 import io
+import time
 from typing import Dict, List, Any, Optional, Tuple, Union
 import threading
 from flask import Flask, request, jsonify, Response, send_file
@@ -38,6 +39,15 @@ categorizer = None
 monitor_thread = None
 monitoring_active = False
 monitor_lock = threading.Lock()
+
+# Initialize components when the app starts
+@app.before_first_request
+def initialize():
+    initialize_components()
+    start_monitoring()
+
+# Export the Flask app and run function
+__all__ = ['app', 'run_api_server']
 
 def initialize_components():
     """Initialize all components"""
@@ -159,11 +169,11 @@ def toggle_tracking():
 
 @app.route('/api/status', methods=['GET'])
 def get_status():
-    """Get current tracking status"""
+    """Get the current status of the monitoring system"""
     return jsonify({
-        "tracking": monitoring_active,
-        "uptime": monitor.get_uptime() if monitor else 0,
-        "version": "1.0.0"
+        'monitoring_active': monitoring_active,
+        'uptime': monitor.get_uptime() if monitor else 0,
+        'last_update': monitor.last_update if monitor else None
     })
 
 @app.route('/api/breaks', methods=['POST'])
@@ -402,6 +412,205 @@ def get_statistics():
         "meeting_time": meeting_time,
         "categories": category_summary
     })
+
+@app.route('/api/resources/current')
+def get_current_resources():
+    """Get current system resource usage"""
+    if not monitor:
+        return jsonify({'error': 'Monitor not initialized'}), 500
+
+    resources = monitor.get_current_resources()
+    return jsonify(resources)
+
+@app.route('/api/processes/active')
+def get_active_processes():
+    """Get list of currently active processes"""
+    if not monitor:
+        return jsonify({'error': 'Monitor not initialized'}), 500
+
+    processes = monitor.get_active_processes()
+    return jsonify(processes)
+
+@app.route('/api/processes/history')
+def get_process_history():
+    """Get historical process data with filtering"""
+    try:
+        start_time = float(request.args.get('start_time', time.time() - 3600))
+        end_time = float(request.args.get('end_time', time.time()))
+        category = request.args.get('category', 'all')
+
+        processes = db.get_processes_in_range(start_time, end_time)
+
+        if category != 'all':
+            processes = [p for p in processes if p.get('category') == category]
+
+        return jsonify(processes)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/resources/history')
+def get_resource_history():
+    """Get historical resource usage data"""
+    try:
+        start_time = float(request.args.get('start_time', time.time() - 3600))
+        end_time = float(request.args.get('end_time', time.time()))
+
+        resources = db.get_resources_in_range(start_time, end_time)
+        return jsonify(resources)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/idle/history')
+def get_idle_history():
+    """Get historical idle time data"""
+    try:
+        start_time = float(request.args.get('start_time', time.time() - 3600))
+        end_time = float(request.args.get('end_time', time.time()))
+
+        idle_times = db.get_idle_times_in_range(start_time, end_time)
+        return jsonify(idle_times)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/categories')
+def get_categories():
+    """Get all process categories"""
+    if not categorizer:
+        return jsonify({'error': 'Categorizer not initialized'}), 500
+
+    return jsonify(categorizer.categories)
+
+@app.route('/api/categories/<category>/processes')
+def get_processes_by_category(category):
+    """Get processes for a specific category"""
+    if not categorizer:
+        return jsonify({'error': 'Categorizer not initialized'}), 500
+
+    try:
+        start_time = float(request.args.get('start_time', time.time() - 3600))
+        end_time = float(request.args.get('end_time', time.time()))
+
+        processes = db.get_processes_in_range(start_time, end_time)
+        category_processes = [p for p in processes if p.get('category') == category]
+
+        return jsonify(category_processes)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/processes/<pid>')
+def get_process_details(pid):
+    """Get detailed information about a specific process"""
+    if not monitor:
+        return jsonify({'error': 'Monitor not initialized'}), 500
+
+    try:
+        process = monitor.get_process_details(int(pid))
+        return jsonify(process)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/active-window')
+def get_active_window():
+    """Get information about the currently active window"""
+    if not monitor:
+        return jsonify({'error': 'Monitor not initialized'}), 500
+
+    window = monitor.get_active_window()
+    return jsonify(window)
+
+@app.route('/api/stats/summary')
+def get_stats_summary():
+    """Get a summary of statistics for the current session"""
+    if not monitor:
+        return jsonify({'error': 'Monitor not initialized'}), 500
+
+    try:
+        start_time = float(request.args.get('start_time', time.time() - 3600))
+        end_time = float(request.args.get('end_time', time.time()))
+
+        processes = db.get_processes_in_range(start_time, end_time)
+        resources = db.get_resources_in_range(start_time, end_time)
+        idle_times = db.get_idle_times_in_range(start_time, end_time)
+
+        # Calculate summary statistics
+        total_processes = len(processes)
+        unique_processes = len(set(p['name'] for p in processes))
+        avg_cpu = sum(r['cpu_percent'] for r in resources) / len(resources) if resources else 0
+        avg_memory = sum(r['memory_percent'] for r in resources) / len(resources) if resources else 0
+        total_idle_time = sum(i['duration'] for i in idle_times)
+
+        return jsonify({
+            'total_processes': total_processes,
+            'unique_processes': unique_processes,
+            'average_cpu': avg_cpu,
+            'average_memory': avg_memory,
+            'total_idle_time': total_idle_time,
+            'time_range': {
+                'start': start_time,
+                'end': end_time
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/monitor/start', methods=['POST'])
+def start_monitoring():
+    """Start the monitoring process"""
+    global monitoring_active, monitor_thread
+
+    if monitoring_active:
+        return jsonify({'error': 'Monitoring is already active'}), 400
+
+    monitor.start_monitoring()
+    monitoring_active = True
+    return jsonify({'status': 'success'})
+
+@app.route('/api/monitor/stop', methods=['POST'])
+def stop_monitoring():
+    """Stop the monitoring process"""
+    global monitoring_active
+
+    if not monitoring_active:
+        return jsonify({'error': 'Monitoring is not active'}), 400
+
+    monitor.stop_monitoring()
+    monitoring_active = False
+    return jsonify({'status': 'success'})
+
+@app.route('/api/filter/update', methods=['POST'])
+def update_filter():
+    """Update the process filter settings"""
+    if not process_filter:
+        return jsonify({'error': 'Process filter not initialized'}), 500
+
+    try:
+        data = request.get_json()
+        if 'cpu_threshold' in data:
+            process_filter.cpu_threshold = float(data['cpu_threshold'])
+        if 'memory_threshold' in data:
+            process_filter.memory_threshold = float(data['memory_threshold'])
+        if 'include_system_processes' in data:
+            process_filter.include_system_processes = bool(data['include_system_processes'])
+        if 'excluded_processes' in data:
+            process_filter.excluded_processes = set(data['excluded_processes'])
+
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/categories/update', methods=['POST'])
+def update_categories():
+    """Update process categories"""
+    if not categorizer:
+        return jsonify({'error': 'Categorizer not initialized'}), 500
+
+    try:
+        data = request.get_json()
+        if 'categories' in data:
+            categorizer.categories = data['categories']
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 def run_api_server(port=5000, debug=False):
     """Run the API server"""
