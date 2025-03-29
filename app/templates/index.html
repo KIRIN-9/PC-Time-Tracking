@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block head %} 
-    <title> PSUTIL-DASHBOARD </title>
+{% block head %}
+    <title> System Monitoring Dashboard </title>
 {% endblock %}
 
-{% block pagetitle %} 
+{% block pagetitle %}
 <div class="text-center w-100">
     <h3 class="text-white h3">Overview</h3>
     <p class="text-small text-muted">
@@ -50,7 +50,7 @@
                             <tr>
                                 <td scope="row"> Used: </td>
                                 <td> {{ context.memory_info['svem_percent'] }}% </td>
-                                
+
                             </tr>
                             <tr>
                                 <td scope="row"> Total Swap: </td>
@@ -213,6 +213,6 @@
     </main>
 {% endblock %}
 
-{% block script %} 
+{% block script %}
 <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
 {% endblock %}

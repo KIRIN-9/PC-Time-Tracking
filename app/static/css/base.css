@@ -1,92 +1,224 @@
+:root {
+  --dark-bg: #0f1014;
+  --darker-bg: #161821;
+  --card-bg: #1e2030;
+  --text-primary: #f8f9fa;
+  --text-secondary: #adb5bd;
+  --primary-color: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --accent-color: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
 body {
-    font-size: .875rem;
-  }
-  
-  .feather {
-    width: 16px;
-    height: 16px;
-  }
-  
-  /*
-   * Sidebar
-   */
-  
-  .sidebar {
-    position: fixed;
-    top: 0;
-    /* rtl:raw:
-    right: 0;
-    */
-    bottom: 0;
-    /* rtl:remove */
-    left: 0;
-    z-index: 100; /* Behind the navbar */
-    padding: 48px 0 0; /* Height of navbar */
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-  }
-  
-  @media (max-width: 767.98px) {
-    .sidebar {
-      top: 5rem;
-    }
-  }
-  
-  .sidebar-sticky {
-    height: calc(100vh - 48px);
-    overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-  }
-  
-  .sidebar .nav-link {
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .sidebar .nav-link .feather {
-    margin-right: 4px;
-    color: #727272;
-  }
-  
-  .sidebar .nav-link.active {
-    color: #2470dc;
-  }
-  
-  .sidebar .nav-link:hover .feather,
-  .sidebar .nav-link.active .feather {
-    color: inherit;
-  }
-  
-  .sidebar-heading {
-    font-size: .75rem;
-  }
-  
-  /*
-   * Navbar
-   */
-  
-  .navbar-brand {
-    padding-top: .75rem;
-    padding-bottom: .75rem;
-    background-color: rgba(0, 0, 0, .25);
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
-  }
-  
-  .navbar .navbar-toggler {
-    top: .25rem;
-    right: 1rem;
-  }
-  
-  .navbar .form-control {
-    padding: .75rem 1rem;
-  }
-  
-  .form-control-dark {
-    color: #fff;
-    background-color: rgba(255, 255, 255, .1);
-    border-color: rgba(255, 255, 255, .1);
-  }
-  
-  .form-control-dark:focus {
-    border-color: transparent;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
-  }
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  background: var(--dark-bg);
+  color: var(--text-primary);
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+/* Navbar styling */
+.navbar {
+  background-color: var(--dark-bg) !important;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary);
+  letter-spacing: 1px;
+}
+
+/* Sidebar styling */
+.sidebar {
+  background-color: var(--dark-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar .nav-link {
+  color: var(--text-secondary);
+  border-radius: 6px;
+  margin: 0.25rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.sidebar .nav-link.active {
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.2);
+  box-shadow: none;
+  font-weight: 500;
+}
+
+/* Card styling */
+.card {
+  background-color: var(--card-bg);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.card:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+/* Table styling */
+.table {
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.table-dark {
+  background-color: transparent;
+}
+
+.table-dark th {
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  background-color: transparent;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Progress bars */
+.progress {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.progress-bar {
+  border-radius: 4px;
+}
+
+/* Timeline elements */
+.timeline-bar {
+  height: 100px;
+  background-color: var(--card-bg);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.timeline-segment {
+  height: 100%;
+  display: inline-block;
+}
+
+.timeline-active {
+  background-color: var(--primary-light);
+}
+
+.timeline-inactive {
+  background-color: transparent;
+}
+
+/* Circular progress */
+.circular-progress {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.circular-progress-circle {
+  stroke: var(--primary-color);
+  stroke-width: 4;
+  fill: none;
+}
+
+.circular-progress-background {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 4;
+  fill: none;
+}
+
+/* Typography adjustments */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+
+.stats-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.stats-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Button styling */
+.btn-primary {
+  background: var(--primary-color);
+  border: none;
+  box-shadow: none;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+/* Badge styling */
+.badge {
+  padding: 0.35em 0.65em;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* Charts and graphs */
+.chart-container {
+  height: 200px;
+  margin: 1rem 0;
+}
