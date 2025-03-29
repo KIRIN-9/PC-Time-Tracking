@@ -40,10 +40,6 @@
   - Input device monitoring
   - Idle state detection
   - Activity logging
-- [ ] ~~Energy Consumption Tracking~~ (Postponed)
-  - Power usage monitoring
-  - Battery status tracking
-  - Energy efficiency metrics
 
 ## Phase 3: User Interaction & Control (In Progress)
 
@@ -55,10 +51,6 @@
   - Resource usage alerts
   - Custom notification rules
   - Alert history
-- [ ] Process Prioritization & Filtering
-  - Custom process filters
-  - Priority management
-  - Resource limits
 - [ ] Custom Scheduling & Automation
   - Task scheduling
   - Automated actions
@@ -70,46 +62,13 @@
 
 ## Phase 4: Web Dashboard & API (Planned)
 
-- [ ] REST API for Remote Monitoring
-  - API endpoints
-  - Authentication
-  - Rate limiting
 - [ ] Web Dashboard
+
   - Real-time visualization
   - Interactive charts
   - Custom widgets
-- [ ] Multi-User Authentication
-  - User management
-  - Role-based access
-  - Session handling
+
 - [ ] Data Export & Reports
   - Export formats
   - Report templates
   - Batch processing
-- [ ] Remote Control for Processes
-  - Process management
-  - Remote commands
-  - Security controls
-
-## Phase 5: Advanced Features & Enhancements (Planned)
-
-- [ ] Application Window Focus Tracking
-  - Window time tracking
-  - Focus patterns
-  - Productivity metrics
-- [ ] Process Dependency Mapping
-  - Process relationships
-  - Dependency visualization
-  - Impact analysis
-- [ ] Integration with External Tools
-  - Third-party APIs
-  - Data synchronization
-  - Export/Import
-- [ ] AI-Based Insights
-  - Usage patterns
-  - Productivity suggestions
-  - Anomaly detection
-- [ ] Security & Privacy Controls
-  - Data encryption
-  - Access logging
-  - Privacy settings

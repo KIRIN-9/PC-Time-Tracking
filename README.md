@@ -7,9 +7,12 @@ A comprehensive process monitoring and time tracking system that helps you under
 - Real-time process monitoring
 - System resource tracking (CPU, Memory, Disk)
 - Active window detection (Windows and Linux)
+- Process categorization and time analytics
+- Interactive CLI with colorful interface
+- Custom alerts and notifications
 - Process history logging
+- Idle time detection
 - Cross-platform support (Windows and Linux)
-- Beautiful CLI interface with tabulated output
 
 ## Requirements
 
@@ -21,6 +24,7 @@ A comprehensive process monitoring and time tracking system that helps you under
   - wmctrl (optional, fallback for window detection)
   - PostgreSQL (for data storage)
   - xprintidle (for idle detection)
+  - libnotify-bin (for desktop notifications)
 
 ## Installation
 
@@ -54,29 +58,95 @@ If you prefer to set up manually:
 
 ```bash
 # For Arch Linux
-sudo pacman -S xdotool wmctrl
+sudo pacman -S xdotool wmctrl libnotify postgresql
 
 # For Ubuntu/Debian
-sudo apt-get install xdotool wmctrl
+sudo apt-get install xdotool wmctrl libnotify-bin postgresql
+```
+
+2. Install Python dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-Run the process monitor with default settings:
+The application provides a unified command interface:
 
 ```bash
-python main.py
+./pc_time_tracker.py [command] [options]
 ```
 
-Options:
+Available commands:
 
-- `--interval`: Set the monitoring interval in seconds (default: 1.0)
-- `--output`: Save process history to a JSON file
+- `monitor` - Run the basic process monitor
+- `cli` - Launch the interactive CLI interface
+- `alerts` - Manage alerts and notifications
+- `report` - Generate reports and visualizations
 
-Example:
+### Basic Monitoring
 
 ```bash
-python main.py --interval 2.0 --output process_history.json
+./pc_time_tracker.py monitor [--interval SECONDS] [--output FILE] [--summary] [--categories]
+```
+
+### Interactive CLI
+
+```bash
+./pc_time_tracker.py cli --interactive
+```
+
+The interactive CLI provides:
+
+- Real-time process monitoring with colorful interface
+- Multiple views (processes, categories, resources)
+- Process selection and details
+- Keyboard shortcuts for easy navigation
+
+### Standard CLI
+
+```bash
+./pc_time_tracker.py cli [--view {processes,categories,resources}] [--refresh SECONDS]
+```
+
+### Managing Alerts
+
+List configured alerts:
+
+```bash
+./pc_time_tracker.py alerts list
+```
+
+Add a new alert:
+
+```bash
+./pc_time_tracker.py alerts add --type resource --name "High CPU" --description "CPU usage alert" --resource cpu --threshold 90
+```
+
+Alert types:
+
+- `resource` - Monitor CPU, memory, or disk usage
+- `process` - Alert when specific processes are running
+- `category` - Alert when too much time is spent in a category
+- `idle` - Alert after system has been idle for a period
+
+Monitor alerts in real-time:
+
+```bash
+./pc_time_tracker.py alerts monitor
+```
+
+View alert history:
+
+```bash
+./pc_time_tracker.py alerts history
+```
+
+### Generate Reports
+
+```bash
+./pc_time_tracker.py report [--hours HOURS] [--categories-only] [--output DIRECTORY]
 ```
 
 ## Current Implementation Details
@@ -91,12 +161,51 @@ python main.py --interval 2.0 --output process_history.json
   - Memory Usage
   - Creation Time
   - Running Duration
+  - Category
+
+### Process Categorization
+
+- Automatic categorization of processes into meaningful groups:
+  - Development
+  - Productivity
+  - Web Browsing
+  - Entertainment
+  - System
+  - Uncategorized
+- Customizable categories via configuration files
+- Time distribution analysis by category
+- Visual reports showing category usage over time
 
 ### System Resource Tracking
 
 - CPU Usage
 - Memory Usage (Total, Available, Percentage)
 - Disk Usage (Total, Used, Percentage)
+
+### Alert System
+
+- Resource usage alerts (CPU, memory, disk)
+- Process-specific alerts
+- Category usage time limits
+- Idle time notifications
+- Desktop notifications
+- Configurable alert thresholds
+- Alert history tracking
+
+### CLI Interface
+
+- Interactive mode with curses interface
+- Multiple view modes
+- Customizable refresh rate
+- Sort processes by different criteria
+- Color-coded interface
+- Keyboard shortcuts
+
+### Idle Detection
+
+- Tracks computer idle time
+- Configurable idle threshold
+- Records idle periods for accurate time analysis
 
 ### Active Window Detection
 
@@ -108,7 +217,7 @@ python main.py --interval 2.0 --output process_history.json
 
 - Continuous background monitoring
 - Configurable update interval
-- JSON-based process history storage
+- Database storage with PostgreSQL
 - Real-time CLI display with tabulated output
 
 ## Development
