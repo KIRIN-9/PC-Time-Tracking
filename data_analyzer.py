@@ -6,11 +6,13 @@ from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import DictCursor
 from config import DB_URI
+from process_categorizer import ProcessCategorizer
 
 class DataAnalyzer:
     def __init__(self):
         """Initialize the DataAnalyzer with database connection."""
         self.conn = psycopg2.connect(DB_URI)
+        self.categorizer = ProcessCategorizer()
 
     def get_process_usage_summary(self, hours=24):
         """Get summary of process CPU and memory usage over the specified time period."""
@@ -131,6 +133,99 @@ class DataAnalyzer:
         # Convert seconds to hours
         df['hours_spent'] = df['seconds_spent'] / 3600
         return df
+
+    def get_category_summary(self, hours=24):
+        """Get summary of time spent in different process categories."""
+        # Ensure categories are updated in the database
+        self.categorizer.update_database_categories()
+
+        query = """
+            SELECT
+                category,
+                COUNT(*) * 5 as seconds_spent  -- Assuming 5-second intervals
+            FROM processes
+            WHERE
+                timestamp >= NOW() - interval '%s hours'
+                AND category IS NOT NULL
+            GROUP BY category
+            ORDER BY seconds_spent DESC
+        """
+
+        df = pd.read_sql_query(query, self.conn, params=(hours,))
+        # Convert seconds to hours
+        df['hours_spent'] = df['seconds_spent'] / 3600
+        return df
+
+    def plot_category_distribution(self, hours=24):
+        """Plot distribution of time spent in different process categories."""
+        df = self.get_category_summary(hours)
+
+        plt.figure(figsize=(10, 6))
+
+        # Create pie chart
+        plt.pie(df['hours_spent'], labels=df['category'], autopct='%1.1f%%')
+        plt.title(f'Time Distribution by Process Category (Last {hours} Hours)')
+        plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+
+        # Save the plot
+        plt.savefig('category_distribution.png')
+        plt.close()
+
+        # Also create a bar chart for comparison
+        plt.figure(figsize=(10, 6))
+        sns.barplot(data=df, x='category', y='hours_spent')
+        plt.title(f'Time Spent by Process Category (Last {hours} Hours)')
+        plt.xlabel('Category')
+        plt.ylabel('Hours Spent')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+
+        # Save the plot
+        plt.savefig('category_hours.png')
+        plt.close()
+
+    def get_category_usage_over_time(self, hours=24, interval_minutes=30):
+        """Get category usage over time with specified interval."""
+        # Ensure categories are updated
+        self.categorizer.update_database_categories()
+
+        query = """
+            SELECT
+                category,
+                date_trunc('hour', timestamp) +
+                    make_interval(mins => floor(date_part('minute', timestamp) / %s) * %s) as time_bucket,
+                COUNT(*) * 5 as seconds_spent
+            FROM processes
+            WHERE
+                timestamp >= NOW() - interval '%s hours'
+                AND category IS NOT NULL
+            GROUP BY category, time_bucket
+            ORDER BY time_bucket, category
+        """
+
+        df = pd.read_sql_query(query, self.conn, params=(interval_minutes, interval_minutes, hours))
+        # Convert seconds to hours
+        df['hours_spent'] = df['seconds_spent'] / 3600
+        return df
+
+    def plot_category_timeline(self, hours=24, interval_minutes=30):
+        """Plot timeline of category usage over the specified period."""
+        df = self.get_category_usage_over_time(hours, interval_minutes)
+
+        # Pivot the data for stacked area chart
+        pivot_df = df.pivot(index='time_bucket', columns='category', values='hours_spent').fillna(0)
+
+        plt.figure(figsize=(12, 6))
+        pivot_df.plot.area(stacked=True, figsize=(12, 6))
+        plt.title(f'Process Category Usage Over Time (Last {hours} Hours)')
+        plt.xlabel('Time')
+        plt.ylabel('Hours Spent')
+        plt.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+
+        # Save the plot
+        plt.savefig('category_timeline.png')
+        plt.close()
 
     def __del__(self):
         """Close database connection when object is destroyed."""

@@ -25,6 +25,7 @@ class Database:
                     memory_percent REAL NOT NULL,
                     create_time TIMESTAMP NOT NULL,
                     active_window TEXT,
+                    category TEXT,
                     UNIQUE(timestamp, pid)
                 )
             ''')
@@ -101,14 +102,15 @@ class Database:
                 cursor.execute('''
                     INSERT INTO processes
                     (timestamp, pid, name, cpu_percent, memory_percent,
-                    create_time, active_window)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    create_time, active_window, category)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT (timestamp, pid) DO UPDATE SET
                         name = EXCLUDED.name,
                         cpu_percent = EXCLUDED.cpu_percent,
                         memory_percent = EXCLUDED.memory_percent,
                         create_time = EXCLUDED.create_time,
-                        active_window = EXCLUDED.active_window
+                        active_window = EXCLUDED.active_window,
+                        category = EXCLUDED.category
                 ''', (
                     timestamp,
                     proc['pid'],
@@ -116,7 +118,8 @@ class Database:
                     proc['cpu_percent'],
                     proc['memory_percent'],
                     proc['create_time'],
-                    active_window
+                    active_window,
+                    proc.get('category', 'uncategorized')
                 ))
 
             conn.commit()
@@ -141,7 +144,7 @@ class Database:
             # Get processes
             cursor.execute(f'''
                 SELECT timestamp, pid, name, cpu_percent, memory_percent,
-                       create_time, active_window
+                       create_time, active_window, category
                 FROM processes
                 {time_condition}
                 ORDER BY timestamp
@@ -189,7 +192,8 @@ class Database:
                     'cpu_percent': row['cpu_percent'],
                     'memory_percent': row['memory_percent'],
                     'create_time': row['create_time'].isoformat(),
-                    'active_window': row['active_window']
+                    'active_window': row['active_window'],
+                    'category': row['category']
                 })
 
             return history

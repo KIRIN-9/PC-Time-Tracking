@@ -5,6 +5,7 @@ import time
 import json
 from datetime import datetime, timedelta
 from tabulate import tabulate
+from process_categorizer import ProcessCategorizer
 
 def format_time(seconds):
     """Format time in seconds to a human-readable string."""
@@ -66,6 +67,30 @@ def print_process_summary(monitor: ProcessMonitor, hours: int = 24):
     headers = ["Process Name", "Count", "Avg CPU %", "Avg Memory %", "First Seen", "Last Seen"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
+def print_category_summary(monitor: ProcessMonitor, hours: int = 24):
+    """Print category summary statistics for the specified time range."""
+    categorizer = ProcessCategorizer()
+    category_data = categorizer.get_category_summary(hours)
+
+    print(f"\nCategory Summary (Last {hours} hours):")
+    print("="*50)
+
+    # Convert seconds to formatted time
+    table_data = []
+    for category, seconds in category_data.items():
+        hours_spent = seconds / 3600
+        table_data.append([
+            category,
+            format_time(seconds),
+            f"{hours_spent:.2f}"
+        ])
+
+    # Sort by time spent
+    table_data.sort(key=lambda x: float(x[2]), reverse=True)
+
+    headers = ["Category", "Time Spent", "Hours"]
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))
+
 def main():
     parser = argparse.ArgumentParser(description='Process Monitoring Dashboard')
     parser.add_argument('--interval', type=float, default=1.0,
@@ -73,6 +98,8 @@ def main():
     parser.add_argument('--output', type=str, help='Output file for process history')
     parser.add_argument('--summary', action='store_true',
                       help='Show process summary statistics')
+    parser.add_argument('--categories', action='store_true',
+                      help='Show process categories summary')
     parser.add_argument('--hours', type=int, default=24,
                       help='Hours of history for summary (default: 24)')
     args = parser.parse_args()
@@ -92,6 +119,8 @@ def main():
             print_process_stats(monitor)
             if args.summary:
                 print_process_summary(monitor, args.hours)
+            if args.categories:
+                print_category_summary(monitor, args.hours)
             time.sleep(args.interval)
     except KeyboardInterrupt:
         print("\nStopping process monitoring...")

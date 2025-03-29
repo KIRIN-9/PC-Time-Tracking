@@ -8,6 +8,7 @@ from datetime import datetime
 import subprocess
 from database import Database
 from idle_detector import IdleDetector
+from process_categorizer import ProcessCategorizer
 
 class ProcessMonitor:
     def __init__(self):
@@ -16,6 +17,7 @@ class ProcessMonitor:
         self._process_history = {}
         self.db = Database()
         self.idle_detector = IdleDetector()
+        self.categorizer = ProcessCategorizer()
 
     def get_running_processes(self) -> List[Dict]:
         """Get list of all running processes with their details."""
@@ -91,11 +93,23 @@ class ProcessMonitor:
                 active_window = self.get_active_window()
                 system_resources = self.get_system_resources()
 
+                # Categorize processes
+                for proc in processes:
+                    proc['category'] = self.categorizer.categorize_process(proc['name'])
+
                 # Log the current state
                 timestamp = datetime.now().isoformat()
 
                 # Save to database
                 self.db.save_process_data(timestamp, processes, active_window, system_resources)
+
+                # Check for idle state
+                idle_time = self.idle_detector.get_idle_time()
+                is_idle = self.idle_detector.is_idle()
+
+                # Add idle information to system resources
+                system_resources['idle_time'] = idle_time
+                system_resources['is_idle'] = is_idle
 
                 # Keep in memory for quick access
                 self._process_history[timestamp] = {
