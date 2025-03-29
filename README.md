@@ -1,66 +1,48 @@
 # PC Time Tracking
 
-A powerful process monitoring and productivity tracking tool for Arch Linux with Hyprland integration, featuring detailed process analytics and system resource monitoring.
+A web-based system monitoring dashboard for Arch Linux that tracks processes, system resources, and productivity metrics.
 
-## Process Monitoring Dashboard
+## Screenshots
 
-### Process Overview
-![Process Overview](screenshot/psutil_dashboard_process_page.png)
+### Dashboard Overview
+![Dashboard Overview](screenshot/psutil_dashboard.png)
 
-The main dashboard provides real-time monitoring of system processes with:
-- Process list with CPU and memory usage
-- System resource utilization
-- Active processes sorting and filtering
+### Process List
+![Process List](screenshot/psutil_dashboard_process_page.png)
 
 ### Process Details
 ![Process Details](screenshot/psutil_dashboard_process_detail_page.png)
 
-Detailed process view includes:
-- In-depth process statistics
-- Resource usage history
-- Process-specific metrics
+## Quick Start
 
-## Core Features
-
-### System Monitoring
-- Real-time process tracking with psutil
-- CPU and memory usage analytics
-- Process lifecycle management
-- System resource monitoring
-
-### Hyprland Integration
-- Window focus tracking
-- Workspace activity monitoring
-- Application usage statistics
-
-### Data Management
-- PostgreSQL database (pc_tracking)
-- Process history logging
-- Activity timeline tracking
-- Work session analytics
-
-## Technical Requirements
-
+### Prerequisites
 - Arch Linux
-- Hyprland window manager
-- PostgreSQL database
 - Python 3.x
-- psutil, psycopg2, blessed libraries
 
-## Usage
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/KIRIN-9/PC-Time-Tracking.git
+cd PC-Time-Tracking
 
-### Controls
-- `q`: Exit application
-- `r`: Refresh process list
-- `s`: Toggle summary view
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate
 
-### Configuration
-- Process monitoring interval: 1.0s
-- Idle detection threshold: 300s
-- Database user: aura
+# Install dependencies
+pip install -r requirements.txt
+```
 
-## Database Schema
+### Running the Application
+```bash
+# Start the web server
+python run.py
+```
 
-- Processes: System process metrics and states
-- WorkSessions: Productivity tracking periods
-- ActivityTimeline: Detailed system activity logs
+Open your browser and navigate to `http://localhost:5000`
+
+## Features
+- Real-time process monitoring
+- System resource tracking
+- Process details and statistics
+- Clean, responsive web interface
