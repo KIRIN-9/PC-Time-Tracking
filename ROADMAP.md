@@ -1,5 +1,3 @@
-# Simplified Development Roadmap
-
 ## Part 1: CLI Process Monitor (Primary Focus)
 
 ### Core Features
