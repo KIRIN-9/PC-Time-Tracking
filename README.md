@@ -8,6 +8,7 @@ A comprehensive process monitoring and time tracking system that helps you under
 - System resource tracking (CPU, Memory, Disk)
 - Active window detection (Windows and Linux)
 - Process categorization and time analytics
+- Process filtering and prioritization
 - Interactive CLI with colorful interface
 - Custom alerts and notifications
 - Process history logging
@@ -110,6 +111,55 @@ The interactive CLI provides:
 ./pc_time_tracker.py cli [--view {processes,categories,resources}] [--refresh SECONDS]
 ```
 
+### Managing Process Filters
+
+List filter settings:
+
+```bash
+./pc_time_tracker.py filter list [--type {excluded,patterns,priorities,thresholds}]
+```
+
+Exclude/include processes:
+
+```bash
+./pc_time_tracker.py filter exclude "chrome"
+./pc_time_tracker.py filter include "chrome"
+```
+
+Manage regex patterns:
+
+```bash
+./pc_time_tracker.py filter pattern "^python.*$"
+./pc_time_tracker.py filter remove-pattern "^python.*$"
+```
+
+Set process priorities (1-5, 5 is highest):
+
+```bash
+./pc_time_tracker.py filter priority "code" 5
+./pc_time_tracker.py filter remove-priority "code"
+```
+
+Set resource thresholds:
+
+```bash
+./pc_time_tracker.py filter threshold cpu 0.5
+./pc_time_tracker.py filter threshold memory 1.0
+```
+
+Include/exclude system processes:
+
+```bash
+./pc_time_tracker.py filter system yes
+./pc_time_tracker.py filter system no
+```
+
+Reset to defaults:
+
+```bash
+./pc_time_tracker.py filter reset
+```
+
 ### Managing Alerts
 
 List configured alerts:
@@ -175,6 +225,22 @@ View alert history:
 - Customizable categories via configuration files
 - Time distribution analysis by category
 - Visual reports showing category usage over time
+
+### Process Filtering & Prioritization
+
+- Filter out unwanted processes from monitoring
+  - Exclude specific processes by name
+  - Exclude processes matching regex patterns
+  - Filter based on CPU and memory usage thresholds
+  - Option to include/exclude system processes
+- Prioritize important processes
+  - Assign priority levels (1-5) to processes
+  - Sort and display processes by priority
+  - Focus on high-priority processes in reports
+- Resource limits (planned)
+  - Set CPU usage limits
+  - Set memory usage limits
+  - Enforce resource restrictions
 
 ### System Resource Tracking
 

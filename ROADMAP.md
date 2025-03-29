@@ -40,6 +40,10 @@
   - Input device monitoring
   - Idle state detection
   - Activity logging
+- [ ] ~~Energy Consumption Tracking~~ (Postponed)
+  - Power usage monitoring
+  - Battery status tracking
+  - Energy efficiency metrics
 
 ## Phase 3: User Interaction & Control (In Progress)
 
@@ -51,24 +55,20 @@
   - Resource usage alerts
   - Custom notification rules
   - Alert history
-- [ ] Custom Scheduling & Automation
-  - Task scheduling
-  - Automated actions
-  - Event triggers
-- [ ] Break & Focus Mode
-  - Pomodoro timer
-  - Focus tracking
-  - Break reminders
+- [x] Process Prioritization & Filtering
+  - Custom process filters
+  - Priority management
+  - Resource limits
 
-## Phase 4: Web Dashboard & API (Planned)
+## Phase 4: Final Touches (Planned)
 
-- [ ] Web Dashboard
-
-  - Real-time visualization
-  - Interactive charts
-  - Custom widgets
-
-- [ ] Data Export & Reports
-  - Export formats
-  - Report templates
-  - Batch processing
+- [ ] Basic Stats View
+  - Simple visualization
+  - Basic charts
+- [ ] Data Export
+  - CSV export format
+  - Simple report generation
+- [ ] Documentation & User Guide
+  - Installation guide
+  - Usage instructions
+  - Configuration options
