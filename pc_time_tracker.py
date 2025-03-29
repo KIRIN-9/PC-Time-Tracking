@@ -12,6 +12,7 @@ from datetime import datetime
 
 from process_monitor import ProcessMonitor
 from process_categorizer import ProcessCategorizer
+from process_filter import ProcessFilter
 from data_analyzer import DataAnalyzer
 from alerts import AlertManager
 from cli import CLI
@@ -97,6 +98,53 @@ def main():
                              help='Only show category-based reports')
     report_parser.add_argument('--output', '-o', help='Output directory for reports')
 
+    # Filter command
+    filter_parser = subparsers.add_parser('filter', help='Manage process filtering')
+    filter_subparsers = filter_parser.add_subparsers(dest='filter_command', help='Filter command')
+
+    # List filters
+    list_filter_parser = filter_subparsers.add_parser('list', help='List filter settings')
+    list_filter_parser.add_argument('--type', choices=['excluded', 'patterns', 'priorities', 'thresholds'],
+                                  default='all', help='Type of filter settings to list')
+
+    # Add excluded process
+    exclude_parser = filter_subparsers.add_parser('exclude', help='Add excluded process')
+    exclude_parser.add_argument('process_name', help='Process name to exclude')
+
+    # Remove excluded process
+    include_parser = filter_subparsers.add_parser('include', help='Remove excluded process')
+    include_parser.add_argument('process_name', help='Process name to include')
+
+    # Add excluded pattern
+    pattern_parser = filter_subparsers.add_parser('pattern', help='Add excluded pattern')
+    pattern_parser.add_argument('pattern', help='Regex pattern to exclude')
+
+    # Remove pattern
+    remove_pattern_parser = filter_subparsers.add_parser('remove-pattern', help='Remove excluded pattern')
+    remove_pattern_parser.add_argument('pattern', help='Pattern to remove')
+
+    # Set priority
+    priority_parser = filter_subparsers.add_parser('priority', help='Set process priority')
+    priority_parser.add_argument('process_name', help='Process name')
+    priority_parser.add_argument('priority', type=int, choices=[1, 2, 3, 4, 5],
+                               help='Priority level (1-5, 5 is highest)')
+
+    # Remove priority
+    remove_priority_parser = filter_subparsers.add_parser('remove-priority', help='Remove process priority')
+    remove_priority_parser.add_argument('process_name', help='Process name')
+
+    # Set threshold
+    threshold_parser = filter_subparsers.add_parser('threshold', help='Set resource threshold')
+    threshold_parser.add_argument('type', choices=['cpu', 'memory'], help='Threshold type')
+    threshold_parser.add_argument('value', type=float, help='Threshold value (percent)')
+
+    # Set system processes
+    system_parser = filter_subparsers.add_parser('system', help='Include/exclude system processes')
+    system_parser.add_argument('include', choices=['yes', 'no'], help='Include system processes')
+
+    # Reset filters
+    reset_parser = filter_subparsers.add_parser('reset', help='Reset filters to default')
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -118,6 +166,8 @@ def main():
         run_alerts(args)
     elif args.command == 'report':
         run_report(args)
+    elif args.command == 'filter':
+        run_filter(args)
 
 def run_monitor(args):
     """Run the process monitor."""
@@ -289,6 +339,98 @@ def run_report(args):
         os.chdir(args.output)
 
     report_main()
+
+def run_filter(args):
+    """Run process filter commands."""
+    print(f"PC Time Tracking Process Filter...")
+
+    process_filter = ProcessFilter()
+
+    if not args.filter_command:
+        print("Available commands:")
+        print("  list            - List filter settings")
+        print("  exclude         - Add excluded process")
+        print("  include         - Remove excluded process")
+        print("  pattern         - Add excluded pattern")
+        print("  remove-pattern  - Remove excluded pattern")
+        print("  priority        - Set process priority")
+        print("  remove-priority - Remove process priority")
+        print("  threshold       - Set resource threshold")
+        print("  system          - Include/exclude system processes")
+        print("  reset           - Reset filters to default")
+        return
+
+    if args.filter_command == 'list':
+        if args.type == 'all' or args.type == 'excluded':
+            print("\nExcluded Processes:")
+            print("=" * 60)
+            excluded = sorted(list(process_filter.excluded_processes))
+            for proc in excluded:
+                print(f"- {proc}")
+
+        if args.type == 'all' or args.type == 'patterns':
+            print("\nExcluded Patterns:")
+            print("=" * 60)
+            for pattern in process_filter.excluded_patterns:
+                print(f"- {pattern}")
+
+        if args.type == 'all' or args.type == 'priorities':
+            print("\nProcess Priorities:")
+            print("=" * 60)
+            priorities = list(process_filter.priority_processes.items())
+            priorities.sort(key=lambda x: x[1], reverse=True)
+            for proc, priority in priorities:
+                print(f"- {proc}: {priority}")
+
+        if args.type == 'all' or args.type == 'thresholds':
+            print("\nResource Thresholds:")
+            print("=" * 60)
+            print(f"CPU Threshold: {process_filter.threshold_cpu if process_filter.threshold_cpu is not None else 'None'}")
+            print(f"Memory Threshold: {process_filter.threshold_memory if process_filter.threshold_memory is not None else 'None'}")
+            print(f"Include System Processes: {'Yes' if process_filter.system_processes else 'No'}")
+
+    elif args.filter_command == 'exclude':
+        process_filter.add_excluded_process(args.process_name)
+        print(f"Added '{args.process_name}' to excluded processes")
+
+    elif args.filter_command == 'include':
+        if process_filter.remove_excluded_process(args.process_name):
+            print(f"Removed '{args.process_name}' from excluded processes")
+        else:
+            print(f"Process '{args.process_name}' was not excluded")
+
+    elif args.filter_command == 'pattern':
+        process_filter.add_excluded_pattern(args.pattern)
+        print(f"Added pattern '{args.pattern}' to excluded patterns")
+
+    elif args.filter_command == 'remove-pattern':
+        if process_filter.remove_excluded_pattern(args.pattern):
+            print(f"Removed pattern '{args.pattern}' from excluded patterns")
+        else:
+            print(f"Pattern '{args.pattern}' was not found")
+
+    elif args.filter_command == 'priority':
+        process_filter.set_process_priority(args.process_name, args.priority)
+        print(f"Set priority of '{args.process_name}' to {args.priority}")
+
+    elif args.filter_command == 'remove-priority':
+        if process_filter.remove_process_priority(args.process_name):
+            print(f"Removed priority setting for '{args.process_name}'")
+        else:
+            print(f"No priority setting found for '{args.process_name}'")
+
+    elif args.filter_command == 'threshold':
+        process_filter.set_threshold(args.type, args.value)
+        print(f"Set {args.type.upper()} threshold to {args.value}%")
+
+    elif args.filter_command == 'system':
+        include = args.include == 'yes'
+        process_filter.set_system_processes(include)
+        print(f"{'Including' if include else 'Excluding'} system processes")
+
+    elif args.filter_command == 'reset':
+        process_filter._create_default_config()
+        print("Reset all filters to default settings")
 
 if __name__ == "__main__":
     main()
