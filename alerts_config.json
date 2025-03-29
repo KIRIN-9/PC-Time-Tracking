@@ -1,0 +1,64 @@
+{
+  "alerts": [
+    {
+      "name": "High CPU Usage",
+      "description": "CPU usage exceeds 90%",
+      "enabled": true,
+      "cooldown": 300,
+      "conditions": {
+        "resource_type": "cpu",
+        "threshold": 90.0
+      },
+      "last_triggered": null,
+      "type": "resource"
+    },
+    {
+      "name": "High Memory Usage",
+      "description": "Memory usage exceeds 85%",
+      "enabled": true,
+      "cooldown": 300,
+      "conditions": {
+        "resource_type": "memory",
+        "threshold": 85.0
+      },
+      "last_triggered": null,
+      "type": "resource"
+    },
+    {
+      "name": "High Disk Usage",
+      "description": "Disk usage exceeds 90%",
+      "enabled": true,
+      "cooldown": 300,
+      "conditions": {
+        "resource_type": "disk",
+        "threshold": 90.0
+      },
+      "last_triggered": null,
+      "type": "resource"
+    },
+    {
+      "name": "Long Idle",
+      "description": "System has been idle for 30 minutes",
+      "enabled": true,
+      "cooldown": 300,
+      "conditions": {
+        "idle_minutes": 30
+      },
+      "last_triggered": null,
+      "type": "idle"
+    },
+    {
+      "name": "Entertainment Limit",
+      "description": "Entertainment time exceeds 2 hours",
+      "enabled": true,
+      "cooldown": 300,
+      "conditions": {
+        "category": "entertainment",
+        "hours_threshold": 2.0,
+        "period_hours": 24
+      },
+      "last_triggered": null,
+      "type": "category"
+    }
+  ]
+}

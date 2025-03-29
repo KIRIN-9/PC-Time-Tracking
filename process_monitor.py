@@ -9,6 +9,7 @@ import subprocess
 from database import Database
 from idle_detector import IdleDetector
 from process_categorizer import ProcessCategorizer
+from process_filter import ProcessFilter
 
 class ProcessMonitor:
     def __init__(self):
@@ -18,6 +19,7 @@ class ProcessMonitor:
         self.db = Database()
         self.idle_detector = IdleDetector()
         self.categorizer = ProcessCategorizer()
+        self.process_filter = ProcessFilter()
 
     def get_running_processes(self) -> List[Dict]:
         """Get list of all running processes with their details."""
@@ -34,7 +36,9 @@ class ProcessMonitor:
                 })
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
-        return processes
+
+        # Apply process filtering
+        return self.process_filter.apply_filter(processes)
 
     def get_active_window(self) -> Optional[str]:
         """Get the currently active window title."""
@@ -134,3 +138,12 @@ class ProcessMonitor:
                           end_time: Optional[str] = None) -> Dict:
         """Get process summary statistics from database."""
         return self.db.get_process_summary(start_time, end_time)
+
+    def get_prioritized_processes(self, limit: Optional[int] = None) -> List[Dict]:
+        """Get list of processes sorted by priority."""
+        processes = self.get_running_processes()
+        prioritized = self.process_filter.get_prioritized_processes(processes)
+
+        if limit:
+            return prioritized[:limit]
+        return prioritized
