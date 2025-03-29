@@ -28,10 +28,8 @@ def processes():
 def process_details(process_id=None):
     if process_id != None:
         context = {
-        'platform_info': get_platform_info(),
-        'process_data': get_process_details(process_id),
-
+            'platform_info': get_platform_info(),
+            'process_data': get_process_details(process_id)
         }
-        return render_template("process_details.html", context=context) 
-    else:
-        return "<h1> Error with Process ID </h1>"
+        return render_template("process_details.html", context=context)
+    return redirect(url_for('processes'))

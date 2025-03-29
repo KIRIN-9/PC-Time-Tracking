@@ -63,10 +63,10 @@
                             {% else %}
                             <td>{{processes.memory_percent}}</td>
                             {% endif %}
-                            {% if context.process_data.cpu_percent != None %}
-                            <td>{{context.process_data.cpu_percent|round(1)}}</td>
+                            {% if processes.cpu_percent != None %}
+                            <td>{{processes.cpu_percent|round(1)}}</td>
                             {% else %}
-                            <td>{{context.process_data.cpu_percent}}</td>
+                            <td>{{processes.cpu_percent}}</td>
                             {% endif %}
                         </tr>
                         {% endfor %}
