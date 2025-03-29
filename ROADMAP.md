@@ -40,10 +40,6 @@
   - Input device monitoring
   - Idle state detection
   - Activity logging
-- [ ] Energy Consumption Tracking
-  - Power usage monitoring
-  - Battery status tracking
-  - Energy efficiency metrics
 
 ## Phase 3: User Interaction & Control (Planned)
 
