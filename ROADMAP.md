@@ -22,7 +22,7 @@
   - JSON storage format
   - Process lifecycle tracking
 
-## Phase 2: Data Storage & Processing (In Progress)
+## Phase 2: Data Storage & Processing ✓
 
 - [x] Database Integration
   - PostgreSQL implementation
@@ -41,7 +41,7 @@
   - Idle state detection
   - Activity logging
 
-## Phase 3: User Interaction & Control (Planned)
+## Phase 3: User Interaction & Control (In Progress)
 
 - [ ] CLI Interface
   - Command-line controls
