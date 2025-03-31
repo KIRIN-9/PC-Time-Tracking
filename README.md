@@ -5,21 +5,30 @@ A web-based system monitoring dashboard for Arch Linux that tracks processes, sy
 ## Screenshots
 
 ### Dashboard Overview
-![Dashboard Overview](screenshot/psutil_dashboard.png)
 
-### Process List
-![Process List](screenshot/psutil_dashboard_process_page.png)
+![Dashboard Overview](screenshot/dashboard.png)
+
+### Netework Destails
+
+![Process List](screenshot/network.png)
 
 ### Process Details
-![Process Details](screenshot/psutil_dashboard_process_detail_page.png)
+
+![Process Details](screenshot/process.png)
+
+### Disk Details
+
+![Process Details](screenshot/disk.png)
 
 ## Quick Start
 
 ### Prerequisites
+
 - Arch Linux
 - Python 3.x
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/KIRIN-9/PC-Time-Tracking.git
@@ -34,6 +43,7 @@ pip install -r requirements.txt
 ```
 
 ### Running the Application
+
 ```bash
 # Start the web server
 python run.py
@@ -42,6 +52,7 @@ python run.py
 Open your browser and navigate to `http://localhost:5000`
 
 ## Features
+
 - Real-time process monitoring
 - System resource tracking
 - Process details and statistics
