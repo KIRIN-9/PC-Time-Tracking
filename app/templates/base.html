@@ -11,7 +11,7 @@
     <body class="bg-dark">
         <!-- Top Navigation Bar-->
         <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-            <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">System Monitor</a>
+            <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="{{ url_for('main') }}">System Monitor</a>
             <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -28,9 +28,15 @@
                     <div class="nav h-100 flex-column mb-auto">
                         <ul class="nav nav-pills flex-column mb-auto">
                             <li class="nav-item">
-                                <a href="{{ url_for('index') }}" class="nav-link text-white {% if request.path == '/' %} active {% endif %}" aria-current="page">
+                                <a href="{{ url_for('main') }}" class="nav-link text-white {% if request.path == '/' %} active {% endif %}" aria-current="page">
                                     <i class="fa-solid fa-house"></i>
-                                    Overview
+                                    Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('index') }}" class="nav-link text-white {% if request.path == '/dashboard' %} active {% endif %}">
+                                    <i class="fa-solid fa-gauge-high"></i>
+                                    Dashboard
                                 </a>
                             </li>
                             <li>
@@ -40,28 +46,25 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('index') }}" class="nav-link text-white">
+                                <a href="{{ url_for('network') }}" class="nav-link text-white {% if request.path == '/network' %} active {% endif %}">
                                     <i class="fa-solid fa-network-wired"></i>
                                     Network
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('index') }}" class="nav-link text-white">
+                                <a href="{{ url_for('disks') }}" class="nav-link text-white {% if request.path == '/disks' %} active {% endif %}">
                                     <i class="fa-solid fa-hard-drive"></i>
                                     Disks
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ url_for('index') }}" class="nav-link text-white">
+                                <a href="{{ url_for('logs') }}" class="nav-link text-white {% if request.path == '/logs' %} active {% endif %}">
                                     <i class="fa-solid fa-file-lines"></i>
                                     Logs
                                 </a>
                             </li>
                         </ul>
                         <hr>
-                        <a href="https://github.com/KIRIN-9/PC-Time-Tracking" class="nav-link text-primary">
-                            View on Github
-                        </a>
                     </div>
                 </div>
 

@@ -29,20 +29,33 @@ def get_platform_info():
     return platform_info
 
 def get_power_info():
-    power_data = psutil.sensors_battery()
+    try:
+        power_data = psutil.sensors_battery()
+        if power_data is None:
+            return {
+                'percent': 0,
+                'time_remaining': 'No battery',
+                'power_source': 'AC Power'
+            }
 
-    if power_data.secsleft in (psutil.POWER_TIME_UNKNOWN, psutil.POWER_TIME_UNLIMITED):
-        time_remaining = 'Calculating'
-    else:
-        time_remaining = str(round(psutil.sensors_battery().secsleft / 3600, 2)) + ' hrs'
+        if power_data.secsleft in (psutil.POWER_TIME_UNKNOWN, psutil.POWER_TIME_UNLIMITED):
+            time_remaining = 'Calculating'
+        else:
+            time_remaining = str(round(power_data.secsleft / 3600, 2)) + ' hrs'
 
-    power_info = {
-        'percent': int(power_data.percent),
-        'time_remaining': time_remaining,
-        'power_source': 'AC Power' if power_data.power_plugged  else 'Battery Power'
-    }
-    
-    return power_info
+        power_info = {
+            'percent': int(power_data.percent),
+            'time_remaining': time_remaining,
+            'power_source': 'AC Power' if power_data.power_plugged else 'Battery Power'
+        }
+        
+        return power_info
+    except Exception:
+        return {
+            'percent': 0,
+            'time_remaining': 'Error',
+            'power_source': 'Unknown'
+        }
 
 def get_user_info():
     user_data = psutil.users()
@@ -76,14 +89,18 @@ def get_disks_info():
     disk_data = {}
     disk_partitions = psutil.disk_partitions(all=False)
     for counter,partition in enumerate(disk_partitions):
-        usage_data = psutil.disk_usage(partition.mountpoint)
-        disk_data[counter] = {
-            'device': partition.device,
-            'mounted': partition.mountpoint,
-            'total': bytes2human(usage_data.total),
-            'used':bytes2human(usage_data.used),
-            'free':bytes2human(usage_data.free),
-        }
+        try:
+            usage_data = psutil.disk_usage(partition.mountpoint)
+            disk_data[counter] = {
+                'device': partition.device,
+                'mounted': partition.mountpoint,
+                'total': bytes2human(usage_data.total),
+                'used': bytes2human(usage_data.used),
+                'free': bytes2human(usage_data.free),
+                'percent': usage_data.percent
+            }
+        except (PermissionError, OSError):
+            continue
     return disk_data
 
 def get_network_info():
@@ -104,3 +121,20 @@ def get_network_info():
                     }
 
     return network_data
+
+def get_disk_io():
+    disk_io = {}
+    try:
+        io_counters = psutil.disk_io_counters(perdisk=True)
+        for disk_name, counters in io_counters.items():
+            disk_io[disk_name] = {
+                'read_count': counters.read_count,
+                'write_count': counters.write_count,
+                'read_bytes': counters.read_bytes,
+                'write_bytes': counters.write_bytes,
+                'read_time': counters.read_time,
+                'write_time': counters.write_time
+            }
+    except (PermissionError, OSError):
+        pass
+    return disk_io

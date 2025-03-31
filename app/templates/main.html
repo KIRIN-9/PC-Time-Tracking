@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Time Tracking - System Monitor</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3E7BFA;
+            --secondary-color: #00E5B9;
+            --accent-color: #9747FF;
+            --dark-bg: #121212;
+            --card-bg: #1E1E1E;
+            --light-text: #F5F5F5;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            background-color: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #121212 0%, #1E1E1E 100%);
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 150%, var(--primary-color) 0%, transparent 60%);
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+        
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            z-index: 1;
+        }
+        
+        .feature-card.dashboard::before { background: linear-gradient(to right, #00E5B9, #3E7BFA); }
+        .feature-card.processes::before { background: linear-gradient(to right, #FF5370, #FF8A65); }
+        .feature-card.network::before { background: linear-gradient(to right, #4CAF50, #8BC34A); }
+        .feature-card.disks::before { background: linear-gradient(to right, #FFC107, #FF9800); }
+        .feature-card.logs::before { background: linear-gradient(to right, #9747FF, #6557FF); }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .dashboard-icon { color: #3E7BFA; }
+        .processes-icon { color: #FF5370; }
+        .network-icon { color: #4CAF50; }
+        .disks-icon { color: #FFC107; }
+        .logs-icon { color: #9747FF; }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        
+        .feature-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--light-text);
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+        
+        .feature-link:hover {
+            transform: translateX(5px);
+        }
+        
+        .footer {
+            background-color: rgba(18, 18, 18, 0.9);
+            padding: 20px 0;
+            margin-top: 80px;
+        }
+        
+        .stat-card {
+            background-color: rgba(30, 30, 30, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .feature-cards {
+                margin-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main') }}">
+                <i class="fas fa-microchip me-2 text-primary"></i>
+                <span>PC Time Tracking</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('main') }}"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}"><i class="fas fa-gauge-high me-1"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('processes') }}"><i class="fas fa-microchip me-1"></i> Processes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('network') }}"><i class="fas fa-network-wired me-1"></i> Network</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('disks') }}"><i class="fas fa-hard-drive me-1"></i> Disks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logs') }}"><i class="fas fa-file-lines me-1"></i> Logs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title">PC Time Tracking & System Monitor</h1>
+                    <p class="hero-subtitle">Real-time monitoring and analysis of your system resources, processes, network, and productivity.</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket me-2"></i> Launch Dashboard
+                    </a>
+                </div>
+                <div class="col-lg-6 d-flex justify-content-center mt-5 mt-lg-0">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="stat-card">
+                                <span class="stat-value" id="processCount">0</span>
+                                <div class="stat-label">PROCESSES</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card">
+                                <span class="stat-value" id="cpuUsage">0%</span>
+                                <div class="stat-label">CPU USAGE</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card">
+                                <span class="stat-value" id="memoryUsage">0%</span>
+                                <div class="stat-label">MEMORY USAGE</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card">
+                                <span class="stat-value" id="diskUsage">0%</span>
+                                <div class="stat-label">DISK USAGE</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stat-card battery-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="stat-value" id="batteryPercent">--</span>
+                                        <div class="stat-label">BATTERY</div>
+                                    </div>
+                                    <div id="batteryIcon" class="me-2">
+                                        <i class="fas fa-battery-full text-success" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="progress bg-dark" style="height: 8px;">
+                                        <div id="batteryProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-1">
+                                        <small class="text-muted" id="batteryStatus">Status: --</small>
+                                        <small class="text-muted" id="batteryTime">--</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Cards -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row feature-cards">
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="feature-card dashboard h-100">
+                        <div class="d-flex flex-column h-100">
+                            <i class="fas fa-gauge-high feature-icon dashboard-icon"></i>
+                            <h3 class="feature-title">System Dashboard</h3>
+                            <p class="feature-desc">Comprehensive overview of your system resources including CPU, memory, disk usage, and more.</p>
+                            <div class="mt-auto">
+                                <a href="{{ url_for('index') }}" class="feature-link">
+                                    View Dashboard <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="feature-card processes h-100">
+                        <div class="d-flex flex-column h-100">
+                            <i class="fas fa-microchip feature-icon processes-icon"></i>
+                            <h3 class="feature-title">Process Monitor</h3>
+                            <p class="feature-desc">Track and analyze all running processes, with detailed information about resource usage.</p>
+                            <div class="mt-auto">
+                                <a href="{{ url_for('processes') }}" class="feature-link">
+                                    Monitor Processes <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="feature-card network h-100">
+                        <div class="d-flex flex-column h-100">
+                            <i class="fas fa-network-wired feature-icon network-icon"></i>
+                            <h3 class="feature-title">Network Monitoring</h3>
+                            <p class="feature-desc">View network interfaces, connections, and real-time data transfer statistics.</p>
+                            <div class="mt-auto">
+                                <a href="{{ url_for('network') }}" class="feature-link">
+                                    Check Network <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-6 mb-4">
+                    <div class="feature-card disks h-100">
+                        <div class="d-flex flex-column h-100">
+                            <i class="fas fa-hard-drive feature-icon disks-icon"></i>
+                            <h3 class="feature-title">Disk Management</h3>
+                            <p class="feature-desc">Monitor disk usage, partitions, and I/O performance across all storage devices.</p>
+                            <div class="mt-auto">
+                                <a href="{{ url_for('disks') }}" class="feature-link">
+                                    Analyze Disks <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-6 mb-4">
+                    <div class="feature-card logs h-100">
+                        <div class="d-flex flex-column h-100">
+                            <i class="fas fa-file-lines feature-icon logs-icon"></i>
+                            <h3 class="feature-title">System Logs</h3>
+                            <p class="feature-desc">Access and analyze system logs to troubleshoot issues and monitor system events.</p>
+                            <div class="mt-auto">
+                                <a href="{{ url_for('logs') }}" class="feature-link">
+                                    View Logs <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 PC Time Tracking. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Stats Update Script -->
+    <script>
+        // Fetch real-time stats from API
+        function updateStats() {
+            fetch('/api/system-stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('processCount').textContent = data.process_count;
+                    document.getElementById('cpuUsage').textContent = data.cpu_percent + '%';
+                    document.getElementById('memoryUsage').textContent = data.memory_percent + '%';
+                    document.getElementById('diskUsage').textContent = data.disk_percent + '%';
+                    
+                    // Update battery information
+                    updateBatteryInfo(data.battery);
+                })
+                .catch(error => {
+                    console.error('Error fetching system stats:', error);
+                    // Fallback to simulated data if fetch fails
+                    simulateStats();
+                });
+        }
+        
+        // Update battery display
+        function updateBatteryInfo(battery) {
+            // Update percentage
+            document.getElementById('batteryPercent').textContent = battery.percent + '%';
+            
+            // Update progress bar
+            const batteryBar = document.getElementById('batteryProgressBar');
+            batteryBar.style.width = battery.percent + '%';
+            
+            // Update status and time
+            document.getElementById('batteryStatus').textContent = 'Status: ' + battery.status;
+            document.getElementById('batteryTime').textContent = battery.time_remaining;
+            
+            // Update icon based on percentage and charging status
+            const batteryIcon = document.getElementById('batteryIcon');
+            let iconHTML = '';
+            
+            if (battery.power_plugged) {
+                if (battery.percent >= 90) {
+                    iconHTML = '<i class="fas fa-battery-full text-success" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 60) {
+                    iconHTML = '<i class="fas fa-battery-three-quarters text-success" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 40) {
+                    iconHTML = '<i class="fas fa-battery-half text-success" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 10) {
+                    iconHTML = '<i class="fas fa-battery-quarter text-warning" style="font-size: 2rem;"></i>';
+                } else {
+                    iconHTML = '<i class="fas fa-battery-empty text-danger" style="font-size: 2rem;"></i>';
+                }
+                iconHTML += ' <i class="fas fa-plug text-info" style="font-size: 1rem; vertical-align: super;"></i>';
+            } else {
+                if (battery.percent >= 90) {
+                    iconHTML = '<i class="fas fa-battery-full text-success" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 60) {
+                    iconHTML = '<i class="fas fa-battery-three-quarters text-success" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 40) {
+                    iconHTML = '<i class="fas fa-battery-half text-warning" style="font-size: 2rem;"></i>';
+                } else if (battery.percent >= 10) {
+                    iconHTML = '<i class="fas fa-battery-quarter text-warning" style="font-size: 2rem;"></i>';
+                } else {
+                    iconHTML = '<i class="fas fa-battery-empty text-danger" style="font-size: 2rem;"></i>';
+                }
+            }
+            
+            batteryIcon.innerHTML = iconHTML;
+            
+            // Update progress bar color based on percentage
+            if (battery.percent <= 20) {
+                batteryBar.className = 'progress-bar bg-danger';
+            } else if (battery.percent <= 50) {
+                batteryBar.className = 'progress-bar bg-warning';
+            } else {
+                batteryBar.className = 'progress-bar bg-success';
+            }
+        }
+        
+        // Fallback function for simulated stats
+        function simulateStats() {
+            document.getElementById('processCount').textContent = Math.floor(Math.random() * 100) + 50;
+            document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 60) + '%';
+            document.getElementById('memoryUsage').textContent = Math.floor(Math.random() * 70) + '%';
+            document.getElementById('diskUsage').textContent = Math.floor(Math.random() * 50) + 30 + '%';
+            
+            // Simulate battery info
+            const battery = {
+                percent: Math.floor(Math.random() * 100),
+                power_plugged: Math.random() > 0.5,
+                status: Math.random() > 0.5 ? 'Charging' : 'Discharging',
+                time_remaining: Math.random() > 0.5 ? '2h 45m remaining' : 'Charging'
+            };
+            updateBatteryInfo(battery);
+        }
+        
+        // Initial update
+        updateStats();
+        
+        // Update every 3 seconds
+        setInterval(updateStats, 3000);
+    </script>
+</body>
+</html> 

@@ -1,218 +1,310 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title> System Monitoring Dashboard </title>
+<title>Dashboard - System Monitor</title>
+<style>
+    .stat-card {
+        background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+        border: 1px solid #333;
+        border-radius: 15px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        background: linear-gradient(45deg, #007bff, #00e1ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #333;
+    }
+    .progress-bar {
+        transition: width 0.5s ease-in-out;
+    }
+    .system-info {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .battery-indicator {
+        position: relative;
+        width: 100%;
+        height: 30px;
+        background: #333;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .battery-level {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 15px;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+</style>
 {% endblock %}
 
 {% block pagetitle %}
-<div class="text-center w-100">
-    <h3 class="text-white h3">Overview</h3>
-    <p class="text-small text-muted">
-
-        {% if context.platform_info['os_name'] != 'unknown' %}
-            <i class="fa-brands fa-{{context.platform_info['os_name']}}"></i>
-        {% else %}
-            <i class="fa-brands fa-question"></i>
-        {% endif %}
-
-        Hostname: {{ context.platform_info['node_name'] }},
-        OS: {% if context.platform_info['os_name'] == 'apple' %} macOS {% else %} {{ context.platform_info['os_name']|title }} {% endif %},
-        System: {{ context.platform_info['system_name'] }} v{{ context.platform_info['release_version'] }},
-        Architecture: {{ context.platform_info['architecture'] }} {{ context.platform_info['processor_type'] }},
-        Up Time: {{ context.platform_info['boot_time'] }}
-    </p>
+<div class="navbar-nav px-3 w-100">
+    <div class="text-light fw-bold fs-4">System Dashboard</div>
 </div>
-
 {% endblock %}
 
 {% block body %}
-
-    <!-- Main Contents -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-
-        <div class="row"' style="padding-top: 10px;">
-
-            <!-- Memory Information -->
-            <div class="col-sm-6 col-lg-3 mb-4">
-                <div class="card h-100 bg-dark text-white">
-                    <div class="d-flex card-header justify-content-between">
-                        <h5>Memory</h5>
-                        <h5>
-                            <i class="fa-solid fa-memory text-warning"></i>
-                        </h5>
+    <div class="container-fluid py-4">
+        <!-- Real-time Stats Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <h3 class="text-light mb-0 cpu-percent">0%</h3>
                     </div>
-                    <div class="card-body">
-                        <table class="table table-hover text-left table-dark text-muted">
-                            <tr>
-                                <td scope="row"> Total RAM: </td>
-                                <td> {{ context.memory_info['svmem_total'] }} </td>
-                            </tr>
-                            <tr>
-                                <td scope="row"> Used: </td>
-                                <td> {{ context.memory_info['svem_percent'] }}% </td>
-
-                            </tr>
-                            <tr>
-                                <td scope="row"> Total Swap: </td>
-                                <td> {{ context.memory_info['smem_total'] }} </td>
-                            </tr>
-                            <tr>
-                                <td scope="row"> Used: </td>
-                                <td> {{ context.memory_info['smem_percent'] }}% </td>
-                            </tr>
-                        </table>
+                    <h5 class="text-light mb-3">CPU Usage</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-info cpu-progress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-memory"></i>
+                        </div>
+                        <h3 class="text-light mb-0 memory-percent">0%</h3>
+                    </div>
+                    <h5 class="text-light mb-3">Memory Usage</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning memory-progress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-hdd"></i>
+                        </div>
+                        <h3 class="text-light mb-0 disk-percent">0%</h3>
+                    </div>
+                    <h5 class="text-light mb-3">Disk Usage</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-success disk-progress" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3 class="text-light mb-0 process-count">0</h3>
+                    </div>
+                    <h5 class="text-light mb-3">Active Processes</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-danger process-progress" role="progressbar" style="width: 100%"></div>
+                    </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Power Information -->
-            <div class="col-sm-6 col-lg-3 mb-4">
-                <div class="card h-100 bg-dark text-white">
-                    <div class="d-flex card-header justify-content-between">
-                        <h5>Power</h5>
-                        <h5>
-                            {% if context.power_info['power_source'] == 'Battery Power' %}
-                                {% if context.power_info['percent'] <= 25 %}
-                                    <i class="fa-solid fa-battery-quarter text-danger"></i>
-                                {% elif (context.power_info['percent'] >=25 and context.power_info['percent'] <= 50) %}
-                                    <i class="fa-solid fa-battery-half"></i>
-                                {% else %}
-                                    <i class="fa-solid fa-battery-three-quarters text-success"></i>
-                                {% endif %}
-                            {% else %}
-                                <i class="fa-solid fa-plug-circle-bolt text-success"></i>
-                            {% endif %}
-                        </h5>
+        <!-- Battery Status -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="stat-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="stat-icon mb-2">
+                                <i class="fas fa-battery-full battery-icon"></i>
+                            </div>
+                            <h5 class="text-light">Battery Status</h5>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="text-light mb-2 battery-percent">0%</h3>
+                            <p class="text-light mb-0 battery-status">Unknown</p>
+                            <p class="text-light mb-0 battery-time">--:--</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <table class="table table-hover text-left table-dark text-muted">
-                            <tr>
-                                <td scope="row"> Percentage: </td>
-                                <td> {{ context.power_info['percent'] }} % </td>
-                            </tr>
-                            <tr>
-                                <td scope="row"> Time: </td>
-                                <td> {{ context.power_info['time_remaining'] }} </td>
-                            </tr>
-                            <tr>
-                                <td scope="row"> Source: </td>
-                                <td> {{ context.power_info['power_source'] }} </td>
-                            </tr>
-                        </table>
+                    <div class="battery-indicator">
+                        <div class="battery-level bg-success" style="width: 0%"></div>
+                    </div>
                     </div>
                 </div>
             </div>
 
-            <!-- User Information -->
-            <div class="col-sm-12 col-lg-6 mb-4">
-                <div class="card h-100 bg-dark text-white">
-                    <div class="d-flex card-header justify-content-between">
-                        <h5>User</h5>
-                        <h5>
-                            <i class="fa-solid fa-user text-primary"></i>
-                        </h5>
+        <!-- System Information -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="system-info p-4">
+                    <h5 class="text-light mb-4">Platform Info</h5>
+                    <div class="text-light" id="system-info">
+                        <p><strong>System:</strong> {{ context.platform_info.system }}</p>
+                        <p><strong>Node:</strong> {{ context.platform_info.node }}</p>
+                        <p><strong>Release:</strong> {{ context.platform_info.release }}</p>
+                        <p><strong>Version:</strong> {{ context.platform_info.version }}</p>
+                        <p><strong>Machine:</strong> {{ context.platform_info.machine }}</p>
+                        <p><strong>Processor:</strong> {{ context.platform_info.processor }}</p>
+                        <p><strong>Boot Time:</strong> {{ context.platform_info.boot_time }}</p>
                     </div>
-                    <div class="card-body table-responsive">
-                        <table class="table table-hover text-left table-dark text-muted">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Username</th>
-                                    <th scope="col">Terminal</th>
-                                    <th scope="col">Host</th>
-                                    <th scope="col">Started</th>
-                                    <th scope="col">PID</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in context.user_info.values() %}
-                                <tr>
-                                    <td scope="row"> {{ user.name }} </td>
-                                    <td> {{ user.terminal }} </td>
-                                    <td> {{ user.host }} </td>
-                                    <td> {{ user.started.strftime('%d-%m-%y %H:%M') }} </td>
-                                    <td> {{ user.pid }} </td>
-                                </tr>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="system-info p-4">
+                    <h5 class="text-light mb-4">Memory Info</h5>
+                    <div class="text-light" id="memory-info">
+                        <p><strong>Total:</strong> {{ context.memory_info.total }}</p>
+                        <p><strong>Available:</strong> {{ context.memory_info.available }}</p>
+                        <p><strong>Used:</strong> {{ context.memory_info.used }}</p>
+                        <p><strong>Free:</strong> {{ context.memory_info.free }}</p>
+                        <p><strong>Swap Total:</strong> {{ context.memory_info.swap_total }}</p>
+                        <p><strong>Swap Used:</strong> {{ context.memory_info.swap_used }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="system-info p-4">
+                    <h5 class="text-light mb-4">Network Info</h5>
+                    <div class="text-light" id="network-info">
+                        {% for interface, stats in context.network_info.items() %}
+                        <div class="mb-3">
+                            <h6>{{ interface }}</h6>
+                            <p class="mb-1"><strong>IP Address:</strong> {{ stats.address or 'Not available' }}</p>
+                            <p class="mb-1"><strong>Bytes Sent:</strong> {{ stats.bytes_sent }}</p>
+                            <p class="mb-1"><strong>Bytes Received:</strong> {{ stats.bytes_recv }}</p>
+                            <p class="mb-0"><strong>Status:</strong> {{ 'Connected' if stats.isup else 'Disconnected' }}</p>
+                        </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
-
-            <!-- Disks Information -->
-            <div class="col-sm-12 col-lg-6 mb-4">
-                <div class="card h-100 bg-dark text-white">
-                    <div class="d-flex card-header justify-content-between">
-                        <h5>Disks</h5>
-                        <h5>
-                            <i class="fa-solid fa-compact-disc text-info"></i>
-                        </h5>
-                    </div>
-                    <div class="card-body table-responsive">
-                        <table class="table table-hover text-left table-dark text-muted">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Device</th>
-                                    <th scope="col">Mounted</th>
-                                    <th scope="col">Total</th>
-                                    <th scope="col">Used</th>
-                                    <th scope="col">Free</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for disk in context.disk_info.values() %}
-                                <tr>
-                                    <td scope="row"> {{ disk.device }} </td>
-                                    <td> {{ disk.mounted }} </td>
-                                    <td> {{ disk.total }} </td>
-                                    <td> {{ disk.used }} </td>
-                                    <td> {{ disk.free }} </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Network Information -->
-            <div class="col-sm-12 col-lg-6 mb-4">
-                <div class="card h-100 bg-dark text-white">
-                    <div class="d-flex card-header justify-content-between">
-                        <h5>Network</h5>
-                        <h5>
-                            <i class="fa-solid fa-network-wired text-danger"></i>
-                        </h5>
-                    </div>
-                    <div class="card-body table-responsive">
-                        <table class="table table-hover text-left table-dark text-muted">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Interface</th>
-                                    <th scope="col">IP</th>
-                                    <th scope="col">Sent Bytes</th>
-                                    <th scope="col">Received Bytes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for nic in context.network_info.values() %}
-                                <tr>
-                                    <td scope="row"> {{ nic.name }} </td>
-                                    <td> {{ nic.ip_address }} </td>
-                                    <td> {{ nic.sent_bytes }} </td>
-                                    <td> {{ nic.received_bytes }} </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+        </div>
         </div>
     </main>
 {% endblock %}
 
 {% block script %}
-<script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+<script>
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatUptime(uptime) {
+    return uptime.split('.')[0]; // Remove microseconds
+}
+
+function updateSystemInfo() {
+    fetch('/api/system-info')
+        .then(response => response.json())
+        .then(data => {
+            // Update Platform Info
+            document.querySelector('#system-info').innerHTML = `
+                <p><strong>System:</strong> ${data.platform_info.system}</p>
+                <p><strong>Node:</strong> ${data.platform_info.node}</p>
+                <p><strong>Release:</strong> ${data.platform_info.release}</p>
+                <p><strong>Version:</strong> ${data.platform_info.version}</p>
+                <p><strong>Machine:</strong> ${data.platform_info.machine}</p>
+                <p><strong>Processor:</strong> ${data.platform_info.processor}</p>
+                <p><strong>Boot Time:</strong> ${formatUptime(data.platform_info.boot_time)}</p>
+            `;
+
+            // Update Memory Info
+            document.querySelector('#memory-info').innerHTML = `
+                <p><strong>Total:</strong> ${formatBytes(data.memory_info.total)}</p>
+                <p><strong>Available:</strong> ${formatBytes(data.memory_info.available)}</p>
+                <p><strong>Used:</strong> ${formatBytes(data.memory_info.used)}</p>
+                <p><strong>Free:</strong> ${formatBytes(data.memory_info.free)}</p>
+                <p><strong>Swap Total:</strong> ${formatBytes(data.memory_info.swap_total)}</p>
+                <p><strong>Swap Used:</strong> ${formatBytes(data.memory_info.swap_used)}</p>
+            `;
+
+            // Update Network Info
+            let networkHtml = '';
+            for (const [interface, stats] of Object.entries(data.network_info)) {
+                networkHtml += `
+                    <div class="mb-3">
+                        <h6>${interface}</h6>
+                        <p class="mb-1"><strong>IP Address:</strong> ${stats.address || 'Not available'}</p>
+                        <p class="mb-1"><strong>Bytes Sent:</strong> ${formatBytes(stats.bytes_sent)}</p>
+                        <p class="mb-1"><strong>Bytes Received:</strong> ${formatBytes(stats.bytes_recv)}</p>
+                        <p class="mb-0"><strong>Status:</strong> ${stats.isup ? '<span class="text-success">Connected</span>' : '<span class="text-danger">Disconnected</span>'}</p>
+                    </div>
+                `;
+            }
+            document.querySelector('#network-info').innerHTML = networkHtml;
+        });
+}
+
+function updateStats() {
+    fetch('/api/system-stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update CPU
+            document.querySelector('.cpu-percent').textContent = `${data.cpu_percent}%`;
+            document.querySelector('.cpu-progress').style.width = `${data.cpu_percent}%`;
+
+            // Update Memory
+            document.querySelector('.memory-percent').textContent = `${data.memory_percent}%`;
+            document.querySelector('.memory-progress').style.width = `${data.memory_percent}%`;
+
+            // Update Disk
+            document.querySelector('.disk-percent').textContent = `${data.disk_percent}%`;
+            document.querySelector('.disk-progress').style.width = `${data.disk_percent}%`;
+
+            // Update Process Count
+            document.querySelector('.process-count').textContent = data.process_count;
+
+            // Update Battery
+            document.querySelector('.battery-percent').textContent = `${data.battery.percent}%`;
+            document.querySelector('.battery-status').textContent = data.battery.status;
+            document.querySelector('.battery-time').textContent = data.battery.time_remaining;
+            document.querySelector('.battery-level').style.width = `${data.battery.percent}%`;
+
+            // Update battery icon class based on percentage
+            const batteryIcon = document.querySelector('.battery-icon');
+            batteryIcon.className = 'fas';
+            if (data.battery.percent <= 10) batteryIcon.classList.add('fa-battery-empty', 'text-danger', 'pulse');
+            else if (data.battery.percent <= 25) batteryIcon.classList.add('fa-battery-quarter', 'text-warning');
+            else if (data.battery.percent <= 50) batteryIcon.classList.add('fa-battery-half', 'text-warning');
+            else if (data.battery.percent <= 75) batteryIcon.classList.add('fa-battery-three-quarters', 'text-success');
+            else batteryIcon.classList.add('fa-battery-full', 'text-success');
+
+            // Add charging indicator
+            if (data.battery.power_plugged) {
+                batteryIcon.classList.add('fa-plug');
+            }
+        });
+}
+
+// Update all stats every second
+setInterval(() => {
+    updateStats();
+    updateSystemInfo();
+}, 1000);
+
+// Initial update
+updateStats();
+updateSystemInfo();
+</script>
 {% endblock %}

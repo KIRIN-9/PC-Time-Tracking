@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Network - System Monitor</title>
+    <style>
+        .network-card {
+            background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 1px solid #333;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        .interface-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s;
+        }
+        .interface-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.08);
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 500;
+            background: linear-gradient(45deg, #007bff, #00e1ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .traffic-chart {
+            height: 60px;
+            background: #333;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        .traffic-sent {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #28a745, #84e486);
+            transition: height 0.3s ease;
+        }
+        .traffic-received {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #007bff, #00e1ff);
+            transition: height 0.3s ease;
+        }
+        .connection-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .connection-badge.established {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: rgba(40, 167, 69, 0.4);
+            color: #28a745;
+        }
+        .connection-badge.listening {
+            background: rgba(0, 123, 255, 0.2);
+            border-color: rgba(0, 123, 255, 0.4);
+            color: #007bff;
+        }
+        .connection-badge.closed {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: rgba(220, 53, 69, 0.4);
+            color: #dc3545;
+        }
+        .connections-table {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .connections-table th {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-weight: 500;
+            border: none;
+        }
+        .connections-table td {
+            border-color: rgba(255,255,255,0.05);
+        }
+        .connection-row {
+            transition: background-color 0.2s;
+        }
+        .connection-row:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+    </style>
+{% endblock %}
+
+{% block pagetitle %}
+<div class="navbar-nav px-3 w-100">
+    <div class="text-light fw-bold fs-4">Network Monitor</div>
+</div>
+{% endblock %}
+
+{% block body %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="container-fluid py-4">
+        <!-- Network Interfaces -->
+        <div class="network-card p-4 mb-4">
+            <h5 class="text-light mb-4">Network Interfaces</h5>
+            <div class="row g-4 network-interfaces">
+                {% for interface, stats in context.network_info.items() %}
+                <div class="col-md-6">
+                    <div class="interface-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h6 class="text-light mb-1">{{ interface }}</h6>
+                                <small class="text-muted">{{ stats.address if stats.address else 'No IP' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="connection-badge {% if stats.isup %}established{% else %}closed{% endif %}">
+                                    {{ 'Active' if stats.isup else 'Inactive' }}
+                                </div>
+                </div>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <small class="text-muted">Bytes Sent</small>
+                                    <div class="stat-value">{{ stats.bytes_sent }}</div>
+                                </div>
+                                <div class="traffic-chart">
+                                    <div class="traffic-sent" style="height: {{ (stats.bytes_sent_percent or 0) }}%"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-2">
+                                    <small class="text-muted">Bytes Received</small>
+                                    <div class="stat-value">{{ stats.bytes_recv }}</div>
+                                </div>
+                                <div class="traffic-chart">
+                                    <div class="traffic-received" style="height: {{ (stats.bytes_recv_percent or 0) }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Network Connections -->
+        <div class="network-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-light mb-0">Active Connections</h5>
+                <div>
+                    <span class="connection-badge established me-2">Established</span>
+                    <span class="connection-badge listening me-2">Listening</span>
+                    <span class="connection-badge closed">Closed</span>
+                </div>
+            </div>
+            <div class="table-responsive connections-table">
+                <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Protocol</th>
+                                    <th>Local Address</th>
+                                    <th>Local Port</th>
+                                    <th>Remote Address</th>
+                                    <th>Remote Port</th>
+                                    <th>Status</th>
+                                    <th>PID</th>
+                                </tr>
+                            </thead>
+                    <tbody class="connections-body">
+                                {% for conn in context.network_connections %}
+                        <tr class="connection-row">
+                                    <td>{{ conn.type }}</td>
+                            <td>{{ conn.laddr[0] if conn.laddr else '-' }}</td>
+                            <td>{{ conn.laddr[1] if conn.laddr else '-' }}</td>
+                            <td>{{ conn.raddr[0] if conn.raddr else '-' }}</td>
+                            <td>{{ conn.raddr[1] if conn.raddr else '-' }}</td>
+                            <td>
+                                <span class="connection-badge {{ conn.status.lower() }}">
+                                            {{ conn.status }}
+                                        </span>
+                                    </td>
+                            <td>{{ conn.pid if conn.pid else '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block script %}
+<script>
+let lastBytesSent = {};
+let lastBytesReceived = {};
+let updateInterval;
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function calculateSpeed(current, last, interface) {
+    if (typeof last[interface] === 'undefined') {
+        last[interface] = current;
+        return 0;
+    }
+    const speed = current - last[interface];
+    last[interface] = current;
+    return speed;
+}
+
+function updateNetworkInfo() {
+    fetch('/api/network')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching network data:', data.error);
+                return;
+            }
+
+            // Update Network Interfaces
+            const interfacesContainer = document.querySelector('.network-interfaces');
+            let interfacesHtml = '';
+            
+            for (const [interface, stats] of Object.entries(data.interfaces)) {
+                const bytesSentSpeed = calculateSpeed(stats.bytes_sent, lastBytesSent, interface);
+                const bytesRecvSpeed = calculateSpeed(stats.bytes_recv, lastBytesReceived, interface);
+                
+                const sentPercent = Math.min((bytesSentSpeed / stats.max_bytes) * 100, 100);
+                const recvPercent = Math.min((bytesRecvSpeed / stats.max_bytes) * 100, 100);
+                
+                interfacesHtml += `
+                    <div class="col-md-6">
+                        <div class="interface-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h6 class="text-light mb-1">${interface}</h6>
+                                    <small class="text-muted">${stats.address || 'No IP'}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="connection-badge ${stats.isup ? 'established' : 'closed'}">
+                                        ${stats.isup ? 'Active' : 'Inactive'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-4">
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Bytes Sent</small>
+                                        <div class="stat-value">${formatBytes(stats.bytes_sent)}</div>
+                                        <small class="text-muted">${formatBytes(bytesSentSpeed)}/s</small>
+                                    </div>
+                                    <div class="traffic-chart">
+                                        <div class="traffic-sent" style="height: ${sentPercent}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Bytes Received</small>
+                                        <div class="stat-value">${formatBytes(stats.bytes_recv)}</div>
+                                        <small class="text-muted">${formatBytes(bytesRecvSpeed)}/s</small>
+                                    </div>
+                                    <div class="traffic-chart">
+                                        <div class="traffic-received" style="height: ${recvPercent}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            interfacesContainer.innerHTML = interfacesHtml;
+            
+            // Update Network Connections
+            const connectionsBody = document.querySelector('.connections-body');
+            let connectionsHtml = '';
+            
+            data.connections.forEach(conn => {
+                connectionsHtml += `
+                    <tr class="connection-row">
+                        <td>${conn.type}</td>
+                        <td>${conn.laddr ? conn.laddr[0] : '-'}</td>
+                        <td>${conn.laddr ? conn.laddr[1] : '-'}</td>
+                        <td>${conn.raddr ? conn.raddr[0] : '-'}</td>
+                        <td>${conn.raddr ? conn.raddr[1] : '-'}</td>
+                        <td>
+                            <span class="connection-badge ${conn.status.toLowerCase()}">
+                                ${conn.status}
+                            </span>
+                        </td>
+                        <td>${conn.pid || '-'}</td>
+                    </tr>
+                `;
+            });
+            connectionsBody.innerHTML = connectionsHtml;
+        })
+        .catch(error => {
+            console.error('Failed to update network info:', error);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial update
+    updateNetworkInfo();
+    
+    // Update every 1 second for more responsive real-time updates
+    updateInterval = setInterval(updateNetworkInfo, 1000);
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+    });
+});
+</script>
+{% endblock %} 

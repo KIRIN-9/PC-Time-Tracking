@@ -1,145 +1,689 @@
 {% extends "base.html" %}
 
 {% block head %} 
-    <title> PSUTIL-DASHBOARD </title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.13.1/datatables.min.css"/>
+<title>Process Details - System Monitor</title>
     <style>
-        .nav-link {
-            color: #ffffff;
-            text-decoration: none;
+    .process-detail-card {
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 1px solid #333;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .process-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .process-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .process-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(145deg, #007bff, #0056b3);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+
+    .process-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+        margin: 0;
+    }
+
+    .process-pid {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-running {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+
+    .status-sleeping {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .status-stopped {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+    .resource-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px;
+        height: 100%;
+    }
+
+    .resource-title {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+
+    .resource-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+
+    .resource-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .resource-bar-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 5px currentColor;
+    }
+
+    .cpu-bar-fill {
+        background: linear-gradient(90deg, #007bff, #00e1ff);
+        color: #007bff;
+    }
+
+    .memory-bar-fill {
+        background: linear-gradient(90deg, #28a745, #84e486);
+        color: #28a745;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .info-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    .info-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .btn-process-action {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-process-action:hover {
+        transform: translateY(-1px);
+    }
+
+    .chart-container {
+        width: 100%;
+        height: 150px;
+        margin-top: 20px;
+    }
+
+    #cpuChart, #memoryChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .error-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(220, 53, 69, 0.95);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .success-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(40, 167, 69, 0.95);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
         }
-        .nav-link:hover{
-            color: #ffffff;
-            text-decoration: none;
+        to {
+            transform: translateX(0);
+            opacity: 1;
         }
-        table {
-            padding-top: 10px;
-            padding-bottom: 10px;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .memory-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .memory-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 8px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .memory-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .memory-value {
+        font-size: 1rem;
+        color: #fff;
+        margin-top: 4px;
+    }
+
+    .io-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+    }
+
+    .io-item {
+        text-align: center;
+    }
+
+    .io-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .io-value {
+        font-size: 1rem;
+        color: #fff;
+        margin-top: 4px;
         }
     </style>
 {% endblock %}
 
 {% block pagetitle %} 
-<div class="text-center w-100">
-    {% if context.process_data != None %} 
-    <h3 class="text-white h3"> {{ context.process_data['name'] }} ( {{ context.process_data['pid'] }} )</h3> 
-    {% endif %}
-    <p class="text-small text-muted">
-
-        {% if context.platform_info['os_name'] != 'unknown' %}
-            <i class="fa-brands fa-{{context.platform_info['os_name']}}"></i>
-        {% else %}
-            <i class="fa-brands fa-question"></i>
-        {% endif %}
-
-        Hostname: {{ context.platform_info['node_name'] }},
-        OS: {% if context.platform_info['os_name'] == 'apple' %} macOS {% else %} {{ context.platform_info['os_name']|title }} {% endif %},
-        System: {{ context.platform_info['system_name'] }} v{{ context.platform_info['release_version'] }},
-        Architecture: {{ context.platform_info['architecture'] }} {{ context.platform_info['processor_type'] }},
-        Up Time: {{ context.platform_info['boot_time'] }}
-    </p>
+<div class="navbar-nav px-3 w-100">
+    <div class="text-light fw-bold fs-4">Process Details</div>
 </div>
-
 {% endblock %}
 
 {% block body %}
-
-    <!-- Main Contents -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-        <div class="row"' style="padding-top: 10px;">
-            <div class="table-responsive text-muted" style="padding-top: 25px;">
-                {% if context.process_data != None %} 
-                <table class="table table-dark table-hover">
-                    <tbody>
-                        <tr class="text-muted">
-                            <td class="text-white">Name</td>
-                            <td>{{context.process_data.name}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">PID</td>
-                            <td>{{context.process_data.pid}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Username</td>
-                            <td>{{context.process_data.username}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Status</td>
-                            <td>{{context.process_data.status}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Created Time</td>
-                            <td>{{context.process_data['create_time'].strftime('%d-%m-%y %H:%M:%S')}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Memory (%)</td>
-                            {% if context.process_data.memory_percent != None %}
-                            <td>{{context.process_data.memory_percent|round(1)}}</td>
-                            {% else %}
-                            <td>{{context.process_data.memory_percent}}</td>
-                            {% endif %}
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">CPU (%)</td>
-                            {% if context.process_data.cpu_percent != None %}
-                            <td>{{context.process_data.cpu_percent|round(1)}}</td>
-                            {% else %}
-                            <td>{{context.process_data.cpu_percent}}</td>
-                            {% endif %}
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Application</td>
-                            <td>{{context.process_data.exe}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Threads</td>
-                            <td>{{context.process_data.num_threads}}</td>
-                        </tr>
-                        <tr class="text-muted">
-                            <td class="text-white">Memory Info</td>
-                            <td>
-                                <table class="table table-dark text-muted">
-                                    <tr>
-                                        <td>RSS</td>
-                                        <td>{{context.process_data.memory_rss}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>VMS</td>
-                                        <td>{{context.process_data.memory_vms}}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-white">CPU Times (sec)</td>
-                            <td>
-                                <table class="table table-dark text-muted">
-                                    <tr>
-                                        <td>User</td>
-                                        <td>{{context.process_data.cpu_times.0}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>System</td>
-                                        <td>{{context.process_data.cpu_times.1}}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                {% else %}
-                    <p class="text-white lead text-center"> 
-                        Process Does not Exists! <br>
-                        <a href="{{ url_for('processes') }}" class="nav-link text-primary">
-                            Go Back to Process Lists
-                        </a>
-                    </p>
-                {% endif %}
+    <div class="container-fluid py-4">
+        <div class="process-detail-card">
+            <div class="process-header">
+                <div class="process-title">
+                    <div class="process-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div>
+                        <h1 class="process-name">{{ context.process_data.name }}</h1>
+                        <div class="process-pid">PID: {{ context.process_data.pid }}</div>
+                    </div>
+                </div>
+                <div>
+                    <span class="status-badge status-{{ context.process_data.status.lower() }}">
+                        {{ context.process_data.status }}
+                    </span>
+                </div>
             </div>
+
+            <div class="row g-4">
+                <!-- CPU Usage -->
+                <div class="col-md-6">
+                    <div class="resource-card">
+                        <div class="resource-title">CPU Usage</div>
+                        <div class="resource-value" id="cpuValue">0%</div>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill cpu-bar-fill" id="cpuBar" style="width: 0%"></div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="cpuChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memory Usage -->
+                <div class="col-md-6">
+                    <div class="resource-card">
+                        <div class="resource-title">Memory Usage</div>
+                        <div class="resource-value" id="memoryValue">0%</div>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill memory-bar-fill" id="memoryBar" style="width: 0%"></div>
+                        </div>
+                        <div class="memory-details">
+                            <div class="memory-item">
+                                <div class="memory-label">Physical Memory</div>
+                                <div class="memory-value" id="rssValue">0 MB</div>
+                            </div>
+                            <div class="memory-item">
+                                <div class="memory-label">Virtual Memory</div>
+                                <div class="memory-value" id="vmsValue">0 MB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Username</div>
+                    <div class="info-value">{{ context.process_data.username }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Created</div>
+                    <div class="info-value">{{ context.process_data.create_time }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Threads</div>
+                    <div class="info-value" id="threadsValue">{{ context.process_data.num_threads }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Priority</div>
+                    <div class="info-value">{{ context.process_data.nice }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Command Line</div>
+                    <div class="info-value text-break">{{ context.process_data.cmdline|join(' ') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Working Directory</div>
+                    <div class="info-value text-break">{{ context.process_data.cwd }}</div>
+                </div>
+            </div>
+
+            <!-- I/O Statistics -->
+            <div class="info-item mt-4">
+                <div class="info-label">I/O Statistics</div>
+                <div class="io-stats">
+                    <div class="io-item">
+                        <div class="io-label">Read</div>
+                        <div class="io-value" id="readBytesValue">0 B</div>
+                    </div>
+                    <div class="io-item">
+                        <div class="io-label">Write</div>
+                        <div class="io-value" id="writeBytesValue">0 B</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add these elements at the end of the body -->
+    <div class="error-toast" id="errorToast"></div>
+    <div class="success-toast" id="successToast"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
         </div>
     </main>
 {% endblock %}
 
 {% block script %} 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let cpuChart, memoryChart;
+let cpuData = Array(60).fill(0);  // Start with zeros
+let memoryData = Array(60).fill(0);
+const labels = Array(60).fill('');
+let updateInterval;
+let lastCpuValue = 0;
+let lastMemoryValue = 0;
 
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function initCharts() {
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                // For System Idle Process, allow values up to 400% (for 4 cores)
+                suggestedMax: {{ context.process_data.pid }} === 0 ? 400 : 100,
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: '#6c757d',
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            },
+            x: {
+                display: false
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    label: function(context) {
+                        return context.raw.toFixed(1) + '%';
+                    }
+                }
+            }
+        },
+        elements: {
+            line: {
+                tension: 0.4
+            },
+            point: {
+                radius: 0
+            }
+        },
+        animation: false,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    };
+
+    cpuChart = new Chart(document.getElementById('cpuChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: cpuData,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: chartOptions
+    });
+
+    memoryChart = new Chart(document.getElementById('memoryChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: memoryData,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: chartOptions
+    });
+}
+
+function updateCharts(cpu, memory) {
+    // Get the actual values
+    const cpuValue = parseFloat(cpu);
+    const memoryValue = parseFloat(memory);
+
+    // Update chart data
+    cpuData.push(cpuValue);
+    cpuData.shift();
+    memoryData.push(memoryValue);
+    memoryData.shift();
+
+    // For System Idle Process, adjust the bar width to fit within view
+    const maxWidth = {{ context.process_data.pid }} === 0 ? Math.min(100, (cpuValue / 4)) : cpuValue;
+
+    // Update the display immediately
+    document.getElementById('cpuValue').textContent = `${cpuValue.toFixed(1)}%`;
+    document.getElementById('cpuBar').style.width = `${maxWidth}%`;
+    document.getElementById('memoryValue').textContent = `${memoryValue.toFixed(1)}%`;
+    document.getElementById('memoryBar').style.width = `${memoryValue}%`;
+
+    // Update charts without animation
+    cpuChart.data.datasets[0].data = cpuData;
+    memoryChart.data.datasets[0].data = memoryData;
+    cpuChart.update('none');
+    memoryChart.update('none');
+}
+
+function updateProcessInfo() {
+    fetch(`/api/processes/{{ context.process_data.pid }}/stats`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.error) {
+                // Update CPU and Memory charts with smoothing
+                const cpuValue = parseFloat(data.cpu_percent);
+                const memoryValue = parseFloat(data.memory_percent);
+                
+                // Smooth the values for better visualization
+                lastCpuValue = lastCpuValue * 0.7 + cpuValue * 0.3;
+                lastMemoryValue = lastMemoryValue * 0.7 + memoryValue * 0.3;
+                
+                updateCharts(lastCpuValue, lastMemoryValue);
+                
+                // Update Memory Details
+                if (data.memory_info) {
+                    const rssValue = document.getElementById('rssValue');
+                    const vmsValue = document.getElementById('vmsValue');
+                    
+                    if (rssValue) {
+                        const physicalMemory = parseInt(data.memory_info.rss || 0);
+                        rssValue.textContent = formatBytes(physicalMemory);
+                    }
+                    
+                    if (vmsValue) {
+                        const virtualMemory = parseInt(data.memory_info.vms || 0);
+                        vmsValue.textContent = formatBytes(virtualMemory);
+                    }
+                }
+
+                // Update I/O Stats
+                if (data.io_info) {
+                    const readValue = document.getElementById('readBytesValue');
+                    const writeValue = document.getElementById('writeBytesValue');
+                    
+                    if (readValue) {
+                        const readBytes = parseInt(data.io_info.read_bytes || 0);
+                        readValue.textContent = formatBytes(readBytes);
+                    }
+                    
+                    if (writeValue) {
+                        const writeBytes = parseInt(data.io_info.write_bytes || 0);
+                        writeValue.textContent = formatBytes(writeBytes);
+                    }
+                }
+
+                // Update other stats
+                const threadsValue = document.getElementById('threadsValue');
+                if (threadsValue) {
+                    threadsValue.textContent = data.num_threads || 0;
+                }
+
+                // Update process status
+                const statusBadge = document.querySelector('.status-badge');
+                if (statusBadge && data.status) {
+                    statusBadge.className = `status-badge status-${data.status.toLowerCase()}`;
+                    statusBadge.textContent = data.status;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Failed to update process info:', error);
+        });
+}
+
+function showToast(message, type = 'error') {
+    const toast = document.getElementById(type === 'error' ? 'errorToast' : 'successToast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 5000);
+}
+
+function showLoading(show = true) {
+    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+function killProcess(pid) {
+    if (confirm('Are you sure you want to terminate this process?')) {
+        showLoading(true);
+        fetch(`/api/processes/${pid}/kill`, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                showToast(data.message || 'Process terminated successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '/processes';
+                }, 1500);
+            } else {
+                if (data.error.includes('critical system process')) {
+                    showToast('Cannot terminate critical system processes for system stability');
+                } else if (data.error.includes('Access denied')) {
+                    retryTermination(pid);
+                } else {
+                    showToast(`Error: ${data.error}`);
+                }
+            }
+        })
+        .catch(error => {
+            showLoading(false);
+            showToast(`Error: ${error.message}`);
+        });
+    }
+}
+
+function retryTermination(pid) {
+    showToast('Attempting alternative termination method...', 'error');
+    setTimeout(() => {
+        fetch(`/api/processes/${pid}/kill`, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Retry-Termination': 'true'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Process terminated successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '/processes';
+                }, 1500);
+            } else {
+                showToast(data.error);
+            }
+        })
+        .catch(error => {
+            showToast(`Error: ${error.message}`);
+        });
+    }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    // Initial update
+    updateProcessInfo();
+    // Update every 50ms for more responsive real-time updates
+    updateInterval = setInterval(updateProcessInfo, 50);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (updateInterval) {
+            clearInterval(updateInterval);
+        }
+    });
+});
+</script>
 {% endblock %}
