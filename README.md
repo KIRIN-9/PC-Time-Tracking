@@ -8,7 +8,7 @@ A web-based system monitoring dashboard for Arch Linux that tracks processes, sy
 
 ![Dashboard Overview](screenshot/dashboard.png)
 
-### Netework Destails
+### Netework Details
 
 ![Process List](screenshot/network.png)
 
